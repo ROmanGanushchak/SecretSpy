@@ -4,5 +4,6 @@ module test_ui {
     requires java.desktop;
 
     opens test_ui to javafx.fxml;
+    opens test_ui.Components to javafx.fxml;
     exports test_ui;
 }

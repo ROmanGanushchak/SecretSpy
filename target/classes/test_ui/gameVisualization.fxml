@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<?import javafx.scene.control.Button?>
 <?import javafx.scene.layout.AnchorPane?>
 
 <AnchorPane fx:id="mainPlane" prefHeight="650.0" prefWidth="1200.0" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" fx:controller="test_ui.GameVisualization">
@@ -8,10 +7,5 @@
       <AnchorPane fx:id="liberalBoard" layoutX="269.0" layoutY="157.0" prefHeight="157.0" prefWidth="475.0" />
       <AnchorPane fx:id="spyBoard" layoutX="269.0" layoutY="325.0" prefHeight="158.0" prefWidth="475.0" />
       <AnchorPane fx:id="voteSurface" layoutX="242.0" layoutY="86.0" prefHeight="478.0" prefWidth="717.0" />
-      <AnchorPane fx:id="presidntUiLayer" prefHeight="650.0" prefWidth="1200.0">
-         <children>
-            <Button fx:id="button" layoutX="574.0" layoutY="312.0" mnemonicParsing="false" onAction="#buttonPressed" text="Button" />
-         </children>
-      </AnchorPane>
    </children>
 </AnchorPane>

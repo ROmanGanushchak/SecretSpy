@@ -1,30 +1,40 @@
 package Player;
 
-import Game.GameControllerVisualService;
+import GameController.GameControllerVisualService;
+import model.Voting.Voting;
 
 public abstract class Player {
-    private PlayerData data;
-    protected GameControllerVisualService proxyGameController;
-
-    public Player(String name, String iconImageUrl) {
-        data = new PlayerData(name, iconImageUrl);
+    public static class UserData {
+        public String name;
+        public String iconImageUrl;
+        public int id;
+        public int modelID;
+    
+        public UserData(int id, String name, String iconImageUrl) {
+            this.id = id;
+            this.name = name;
+            this.iconImageUrl = iconImageUrl;
+        }
     }
 
-    public abstract void voteForChancler();
+    private UserData data;
+    protected GameControllerVisualService proxyGameController;
+
+    public Player(int id, String name, String iconImageUrl) {
+        data = new UserData(id, name, iconImageUrl);
+    }
+
+    public Player(UserData playerData) {
+        data = playerData;
+    }
+
+    public abstract void voteForChancler(Voting voting);
 
     public void setGameContrlProxy(GameControllerVisualService proxyGameController) {
         this.proxyGameController = proxyGameController;
     }
 
-    public PlayerData.mainRoles getRole() {
-        return this.data.role;
-    }
-    
-    public void setRole(PlayerData.mainRoles role) {
-        this.data.role = role;
-    }
-
-    public PlayerData getPlayerData() {
+    public UserData getPlayerData() {
         return data;
     }
 

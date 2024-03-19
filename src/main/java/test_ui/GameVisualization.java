@@ -1,10 +1,13 @@
 package test_ui;
 
-import ChangebleRole.President;
-import ChangebleRole.President.presidntRights;
-import Game.GameControllerVisualService;
+import model.ChangebleRole.President;
+import model.ChangebleRole.President.rights;
+import test_ui.Components.LiberalBoardController;
+import test_ui.Components.SpyBoardController;
+import GameController.GameControllerVisualService;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
+import javafx.scene.Parent;
 import javafx.scene.control.Button;
 import javafx.scene.layout.AnchorPane;
 import javafx.scene.transform.Scale;
@@ -33,9 +36,12 @@ public class GameVisualization{ // game visualization має компонент�
     private Scale lastTransformation;
     private GameControllerVisualService gameControllerProxy;
 
+    private LiberalBoardController liberalBoardController;
+    private SpyBoardController spyBoardController;
+
     @FXML
     void buttonPressed(ActionEvent event) {
-        this.gameControllerProxy.presidntRequest(President.presidntRights.RevealingRoles);
+        this.gameControllerProxy.presidntRequest(President.rights.RevealingRoles);
     }
 
     public void resizeMainMuneX(Number oldNumber, Number newNumber) {
@@ -56,9 +62,13 @@ public class GameVisualization{ // game visualization має компонент�
             this.lastTransformation = new Scale(1, 1, 0, 0);
             mainPlane.getTransforms().add(lastTransformation);
 
-            Component.initialize(getClass().getResource("liberalBoard.fxml"), this.liberalBoard);
-            Component.initialize(getClass().getResource("spyBoard.fxml"), this.spyBoard);
+            System.out.println(App.class.getResource("liberalBoard.fxml"));
+            Parent liberal = Component.initialize(App.class.getResource("liberalBoard.fxml"), this.liberalBoard);
+            Parent spy = Component.initialize(App.class.getResource("spyBoard.fxml"), this.spyBoard);
             this.voteManeger = new VoteManeger(this.voteSurface);
+
+            this.liberalBoardController = (LiberalBoardController) liberal.getProperties().get("controller");
+            this.spyBoardController = (SpyBoardController) spy.getProperties().get("controller");
         } catch (Exception e) {
             System.out.println("unsuccesfull initilize of main controller");
             e.printStackTrace();
@@ -80,6 +90,14 @@ public class GameVisualization{ // game visualization має компонент�
 
     public void showVotingResult(boolean voteResult, String presidentName, String yesVoteNames[], String noVoteNames[]) {
         this.voteManeger.showResult(voteResult, presidentName, yesVoteNames, noVoteNames);
+    }
+
+    public LiberalBoardController getLiberalBoardController() {
+        return this.liberalBoardController;
+    }
+
+    public SpyBoardController getSpyBoardController() {
+        return this.spyBoardController;
     }
 }
 

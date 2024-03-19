@@ -1,10 +1,12 @@
 package test_ui;
 
-import Game.GameControllerVisualService;
+import GameController.GameControllerVisualService;
 import javafx.animation.TranslateTransition;
 import javafx.scene.Parent;
 import javafx.scene.layout.AnchorPane;
 import javafx.util.Duration;
+import test_ui.Components.VoteComponentController;
+import test_ui.Components.VoteResultController;
 
 public class VoteManeger {
     private AnchorPane voteSurface;
