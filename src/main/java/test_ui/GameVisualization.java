@@ -1,18 +1,35 @@
 package test_ui;
 
 import model.ChangebleRole.President;
+import model.Observers.ActionObserver;
+import model.Observers.ObserversAccess;
 import test_ui.Components.LiberalBoardController;
 import test_ui.Components.SpyBoardController;
 import GameController.GameControllerVisualService;
+
+import java.util.ArrayList;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.scene.Parent;
 import javafx.scene.control.Button;
+import javafx.scene.control.TextField;
 import javafx.scene.layout.AnchorPane;
 import javafx.scene.transform.Scale;
 import javafx.util.Pair;
 
 public class GameVisualization{ // game visualization має компоненти спільні для всіх гравців
+
+    // @FXML
+    // private Button commandExecute;
+
+    // @FXML
+    // private TextField commandLine;
+
+    @FXML
+    private Button comandExcut;
+
+    @FXML
+    private TextField comandLine;
 
     @FXML
     private AnchorPane mainPlane;
@@ -39,8 +56,9 @@ public class GameVisualization{ // game visualization має компонент�
     private SpyBoardController spyBoardController;
 
     @FXML
-    void buttonPressed(ActionEvent event) {
-        this.gameControllerProxy.presidntRequest(President.rights.RevealingRoles);
+    void executComand(ActionEvent event) {
+        this.gameControllerProxy.executeCommand(this.comandLine.getText());
+        this.comandLine.setText("");
     }
 
     public void resizeMainMuneX(Number oldNumber, Number newNumber) {
@@ -74,6 +92,7 @@ public class GameVisualization{ // game visualization має компонент�
 
             this.liberalBoardController = (LiberalBoardController) liberal.getProperties().get("controller");
             this.spyBoardController = (SpyBoardController) spy.getProperties().get("controller");
+            System.out.println("Game visuam initialized");
         } catch (Exception e) {
             System.out.println("unsuccesfull initilize of main controller");
             e.printStackTrace();
@@ -82,19 +101,23 @@ public class GameVisualization{ // game visualization має компонент�
 
     public void setGameContrlProxy(GameControllerVisualService gameContrlProxy) {
         this.gameControllerProxy = gameContrlProxy;
-        this.voteManeger.setGameContrlProxy(this.gameControllerProxy);
     }
 
-    public void startVoting() {
-        this.voteManeger.start();
+    public void startVoting(String presidentName, String chancellorName) {
+        this.voteManeger.start(presidentName, chancellorName);
     }
 
     public void endVoting() {
         this.voteManeger.end();
     }
 
-    public void showVotingResult(boolean voteResult, String presidentName, String yesVoteNames[], String noVoteNames[]) {
-        this.voteManeger.showResult(voteResult, presidentName, yesVoteNames, noVoteNames);
+    public ObserversAccess<ActionObserver<Boolean>> getVotingResultObservers() {
+        System.out.println("get vote observer");
+        return this.voteManeger.getVotingResultObservers();
+    }
+
+    public void showVotingResult(boolean result, String candidateName, ArrayList<String> yesVotes, ArrayList<String> noVotes) {
+        this.voteManeger.showResult(result, candidateName, yesVotes, noVotes);
     }
 
     public LiberalBoardController getLiberalBoardController() {
@@ -103,6 +126,10 @@ public class GameVisualization{ // game visualization має компонент�
 
     public SpyBoardController getSpyBoardController() {
         return this.spyBoardController;
+    }
+
+    public VoteManeger getVoteManager() {
+        return this.voteManeger;
     }
 }
 

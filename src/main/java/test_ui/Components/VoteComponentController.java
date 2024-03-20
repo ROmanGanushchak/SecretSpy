@@ -1,10 +1,12 @@
 package test_ui.Components;
 
-import GameController.GameControllerVisualService;
 import javafx.fxml.FXML;
 import javafx.scene.control.Label;
 import javafx.scene.image.ImageView;
 import javafx.scene.input.MouseEvent;
+import model.Observers.ActObservers;
+import model.Observers.ActionObserver;
+import model.Observers.ObserversAccess;
 
 public class VoteComponentController {
 
@@ -22,28 +24,34 @@ public class VoteComponentController {
     
     @FXML
     private Label chanclerName;
-    private GameControllerVisualService gameControllerProxy;
+
+    private ActObservers<Boolean> voteResultObserves;
 
     public void setPresidentName(String name) {
+        System.out.println(name);
         this.presidentName.setText(name);
     }
 
-    public void setChanclerName(String name) {
+    @FXML
+    public void initialize() {
+        this.voteResultObserves = new ActObservers<>();
+    }
+
+    public void setChancellorName(String name) {
         this.chanclerName.setText(name);
     }
 
     @FXML
     void yesVotePressed(MouseEvent event) {
-        System.out.println("Yes was pressed");
-        gameControllerProxy.yesVote();
+        this.voteResultObserves.informAll(true);
     }
 
     @FXML
     void noVotePressed(MouseEvent event) {
-        gameControllerProxy.noVote();
-    }  
-
-    public void setGameContrlProxy(GameControllerVisualService gameControllerProxy) {
-        this.gameControllerProxy = gameControllerProxy;
+        this.voteResultObserves.informAll(false);
     }
+
+    public ObserversAccess<ActionObserver<Boolean>> getVoteResultObservers() {
+        return this.voteResultObserves;
+    } 
 }

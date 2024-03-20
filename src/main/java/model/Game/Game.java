@@ -5,7 +5,7 @@ import model.Cards.CardsArray.Card;
 import model.ChangebleRole.*;
 import model.Observers.ActObservers;
 import model.Observers.ActionObserver;
-import model.Observers.ObserversPublicAccess;
+import model.Observers.ObserversAccess;
 import model.Observers.ActionObserver.MethodToCall;
 import model.Voting.VoteObserver;
 import model.Voting.Voting;
@@ -147,8 +147,8 @@ public class Game implements GamePresidentAccess {
     public boolean presidentSuggestChancellor(int playerID) {
         System.out.println(this.lastChancellor);
         if (isVotingActive || this.players.get(playerID) == null) return false;
-        if (isInParlament(playerID)) {
-            System.out.println("Chancellor candidate is in parlament");
+        if (wasInParlament(playerID) || this.president.getPlayer().getId() == playerID) {
+            System.out.println("Chancellor candidate was in parlament");
             return false;
         }
 
@@ -222,7 +222,7 @@ public class Game implements GamePresidentAccess {
             } while (
                 presidentCandidate == null || wasInParlament(presidentIndex)
             );
-            this.president.change(this.players.get(presidentIndex));
+            this.president.change(presidentCandidate);
         } 
         else this.president.change(this.nextPresident);
 
@@ -316,11 +316,11 @@ public class Game implements GamePresidentAccess {
         return new PlayerModel[]{this.lastChancellor, this.lastPresident};
     }
 
-    public ObserversPublicAccess<ActionObserver<Card>> getCardAddingToBoardObservers() {
+    public ObserversAccess<ActionObserver<Card>> getCardAddingToBoardObservers() {
         return this.cardAddingToBoardObservers;
     }
 
-    public ObserversPublicAccess<ActionObserver<Integer>> getFailedElectionObservers() {
+    public ObserversAccess<ActionObserver<Integer>> getFailedElectionObservers() {
         return this.failedElectionObservers;
     }
 }

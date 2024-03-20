@@ -1,10 +1,13 @@
 package test_ui;
 
-import GameController.GameControllerVisualService;
+import java.util.ArrayList;
+
 import javafx.animation.TranslateTransition;
 import javafx.scene.Parent;
 import javafx.scene.layout.AnchorPane;
 import javafx.util.Duration;
+import model.Observers.ActionObserver;
+import model.Observers.ObserversAccess;
 import test_ui.Components.VoteComponentController;
 import test_ui.Components.VoteResultController;
 
@@ -27,34 +30,44 @@ public class VoteManeger {
         this.voteResultController = (VoteResultController) this.voteResult.getProperties().get("controller");
         this.voteResultController.initialize();
         
+        this.voteResultController.getContinueButtonObservers().subscribe(
+            new ActionObserver<>((Integer num) -> end()) );
+
+        AnchorPane.clearConstraints(voteSurface);
         Component.hide(this.voteSurface);
         Component.hide(voteComponent);
         Component.hide(voteResult);
     }
 
-    public void setGameContrlProxy(GameControllerVisualService gameControllerProxy) {
-        this.voteController.setGameContrlProxy(gameControllerProxy);
-    }
-
-    public void showResult(boolean voteResult, String presidentName, String yesVoteNames[], String noVoteNames[]) {
+    public void showResult(boolean voteResult, String presidentName, ArrayList<String> yesVoteNames, ArrayList<String> noVoteNames) {
         Component.hide(this.voteComponent);
         Component.reveal(this.voteResult);
         this.voteResultController.setup(voteResult, presidentName, yesVoteNames, noVoteNames);
     }
 
-    public void start() {
-        TranslateTransition animation = new TranslateTransition(Duration.seconds(this.voteSurfaceAnimationTime), this.voteComponent);
+    public void start(String presidentName, String chancellorName) {
+        TranslateTransition animation = new TranslateTransition(Duration.seconds(this.voteSurfaceAnimationTime), this.voteSurface);
         animation.setFromY(((AnchorPane) this.voteSurface.getParent()).getHeight());
         animation.setToY(0); 
+
         Component.reveal(this.voteSurface);
         Component.reveal(this.voteComponent);
+        animation.setOnFinished(e -> {
+            this.voteSurface.setTranslateX(0);
+            this.voteSurface.setTranslateY(0);
+        });
         animation.play();     
+
+        this.voteController.setPresidentName(presidentName);
+        this.voteController.setChancellorName(chancellorName);
     }
 
     public void end() {
-        TranslateTransition animation = new TranslateTransition(Duration.seconds(this.voteSurfaceAnimationTime), this.voteComponent);
+        this.voteComponent.setVisible(true);
+        TranslateTransition animation = new TranslateTransition(Duration.seconds(this.voteSurfaceAnimationTime), this.voteSurface);
         animation.setFromY(0);
         animation.setToY(((AnchorPane) this.voteSurface.getParent()).getHeight()); 
+        System.out.println(((AnchorPane) this.voteSurface.getParent()).getHeight());
 
         animation.setOnFinished(e -> {
             Component.hide(this.voteSurface);
@@ -65,5 +78,17 @@ public class VoteManeger {
         });
 
         animation.play();  
+    }
+
+    public ObserversAccess<ActionObserver<Boolean>> getVotingResultObservers() {
+        return this.voteController.getVoteResultObservers();
+    }
+
+    public void setPresidentName(String name) {
+        this.voteController.setPresidentName(name);
+    }
+    
+    public void setChancellorName(String name) {
+        this.voteController.setChancellorName(name);
     }
 }

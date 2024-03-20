@@ -2,7 +2,7 @@ package model.Observers;
 
 import java.util.ArrayList;
 
-public class Observers<T> implements ObserversPublicAccess<T> {
+public class Observers<T> implements ObserversAccess<T> {
     private ArrayList<T> followers;
 
     public Observers() {

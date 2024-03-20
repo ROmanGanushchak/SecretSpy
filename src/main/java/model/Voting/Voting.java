@@ -6,7 +6,7 @@ import java.util.Map;
 import java.util.Set;
 
 import model.Observers.Observers;
-import model.Observers.ObserversPublicAccess;
+import model.Observers.ObserversAccess;
 
 import java.util.HashSet;
 
@@ -54,6 +54,7 @@ public class Voting {
     }
 
     public void vote(int player, boolean vote) {
+        System.out.println(player + " Voted");
         if (!this.participators.contains(player)) {
             System.out.println("Trying to vote from member not in group");
             return;
@@ -66,7 +67,7 @@ public class Voting {
             this.informTheResult();
     }
 
-    public ObserversPublicAccess<VoteObserver> getEndingObservers() {
+    public ObserversAccess<VoteObserver> getEndingObservers() {
         return this.observersOfEnding;
     }
 }

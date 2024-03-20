@@ -5,6 +5,7 @@ import model.Voting.Voting;
 
 public abstract class PlayerGameManager {
     private int modelID;
+    private String name;
 
     public void setModelID(int modelID) {
         this.modelID = modelID;
@@ -14,7 +15,16 @@ public abstract class PlayerGameManager {
         return this.modelID;
     }
 
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public String getName() {
+        return this.name;
+    }
+
     public abstract void setProxyGameController(GameControllerVisualService gameController);
     public abstract int getPlayerID();
     public abstract void voteForChancellor(Voting voting);
+    public abstract void makePresident();
 }

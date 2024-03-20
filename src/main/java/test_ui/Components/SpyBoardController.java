@@ -45,6 +45,10 @@ public class SpyBoardController {
         showCard(this.index++);
     }
 
+    public void showNextCard() {
+        this.spysCardsImages[index++].setImage(this.spyCardImage);
+    }
+
     public void showCard(int index) {
         this.spysCardsImages[index].setImage(this.spyCardImage);
     }

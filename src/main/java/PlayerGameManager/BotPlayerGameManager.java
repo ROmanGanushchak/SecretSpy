@@ -7,7 +7,11 @@ public class BotPlayerGameManager extends PlayerGameManager {
     private GameControllerVisualService gameController;
 
     public void voteForChancellor(Voting voting) {
-        voting.vote(0, true);
+        voting.vote(this.getModelID(), false);
+    }
+
+    public void makePresident() {
+        
     }
 
     public void setProxyGameController(GameControllerVisualService gameController) {

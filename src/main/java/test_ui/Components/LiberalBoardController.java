@@ -81,6 +81,10 @@ public class LiberalBoardController {
         this.cardImage = new Image(App.class.getResourceAsStream("images/liberalCard.png"));
     }
 
+    public void showNextCard() {
+        this.liberalCardsImages[index++].setImage(this.cardImage);
+    }
+
     public void showCard(int index) {
         if (index >= cardSlotCount || index < 0) throw new RuntimeException("Uncorrect index of array");
         this.liberalCardsImages[index].setImage(this.cardImage);

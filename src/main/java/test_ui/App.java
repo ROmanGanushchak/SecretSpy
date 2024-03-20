@@ -1,9 +1,6 @@
 package test_ui;
 
 import javafx.application.Application;
-import javafx.fxml.FXMLLoader;
-import javafx.scene.Parent;
-import javafx.scene.Scene;
 import javafx.stage.Stage;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -26,6 +23,9 @@ public class App extends Application {
         players.add(player);
 
         this.gameController = new GameController(players, 9);
+        // Thread consoleThread = new Thread(this.gameController);
+        // consoleThread.setDaemon(true); // Mark the thread as a daemon so it doesn't prevent the application from exiting
+        // consoleThread.start();
 
         System.out.println("Before set");
 

@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
 <?import javafx.scene.control.Button?>
+<?import javafx.scene.control.TextField?>
 <?import javafx.scene.layout.AnchorPane?>
 
 <AnchorPane fx:id="mainPlane" prefHeight="650.0" prefWidth="1200.0" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" fx:controller="test_ui.GameVisualization">
@@ -8,6 +9,11 @@
       <AnchorPane fx:id="liberalBoard" layoutX="269.0" layoutY="157.0" prefHeight="157.0" prefWidth="475.0" />
       <AnchorPane fx:id="spyBoard" layoutX="269.0" layoutY="325.0" prefHeight="158.0" prefWidth="475.0" />
       <AnchorPane fx:id="voteSurface" layoutX="242.0" layoutY="86.0" prefHeight="478.0" prefWidth="717.0" />
-      <Button layoutX="27.0" layoutY="33.0" mnemonicParsing="false" text="Button" />
+      <AnchorPane layoutX="36.0" layoutY="32.0" prefHeight="26.0" prefWidth="159.0">
+         <children>
+            <Button fx:id="comandExcut" layoutX="105.0" layoutY="-3.0" mnemonicParsing="false" onAction="#executComand" prefHeight="36.0" prefWidth="66.0" text="Execute" />
+            <TextField fx:id="comandLine" layoutX="-1.0" layoutY="-1.0" prefHeight="36.0" prefWidth="106.0" />
+         </children>
+      </AnchorPane>
    </children>
 </AnchorPane>
