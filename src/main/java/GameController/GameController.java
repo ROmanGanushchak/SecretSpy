@@ -1,13 +1,10 @@
 package GameController;
 
-import java.io.IOException;
 import java.lang.reflect.Proxy;
 import java.util.ArrayList;
 import java.util.Scanner;
 
-import Player.*;
-import Player.Player.UserData;
-import javafx.fxml.FXMLLoader;
+import PlayerGameManager.*;
 import javafx.scene.Scene;
 import model.Cards.CardsArray.Card;
 import model.ChangebleRole.Chancellor;
@@ -16,11 +13,10 @@ import model.ChangebleRole.President.rights;
 import model.Game.Game;
 import model.Observers.ActionObserver;
 import model.Voting.Voting;
-import test_ui.App;
 import test_ui.GameVisualization;
 
 public class GameController implements GameControllerModuleService {
-    private Player players[];
+    private ArrayList<PlayerGameManager> players;
     private Game gameModel;
     private GameVisualization gameVisualization;
     private GameControllerVisualService visualProxy;
@@ -38,32 +34,20 @@ public class GameController implements GameControllerModuleService {
         this.cards = cards;
     }
 
-    public GameController() {
-        this.visualProxy = (GameControllerVisualService) Proxy.newProxyInstance(
-            GameControllerVisualService.class.getClassLoader(), 
-            new Class<?>[]{GameControllerVisualService.class}, 
-            new InvocationHandlerGameContrl(this)
-        );
-
+    public GameController(ArrayList<HumanPlayerGameManager> humanPlayers, int botsCount) {
         this.moduleProxy = (GameControllerModuleService) Proxy.newProxyInstance(
             GameControllerModuleService.class.getClassLoader(), 
             new Class<?>[]{GameControllerModuleService.class}, 
             new InvocationHandlerGameContrl(this)
         );
-        System.out.println("Proxy created");
 
-        int spyCount = 2;
-        int liberalCount = 5;
-        ArrayList<UserData> playersData = new ArrayList<>(spyCount+liberalCount);
-        this.players = new Player[spyCount+liberalCount+1];
-        for (int i=0; i<spyCount+liberalCount+1; i++) {
-            playersData.add(new UserData(i, Integer.toString(i), ""));
-            this.players[i] = new BotPlayer(playersData.get(i));
-            this.players[i].getPlayerData().id = i;
+        ArrayList<PlayerGameManager> players = new ArrayList<>(humanPlayers.size()+botsCount);
+        players.addAll(humanPlayers);
+        for (int i=0; i<botsCount; i++) {
+            players.add(new BotPlayerGameManager());
         }
-        System.out.println("players created");
 
-        this.gameModel = new Game(playersData.size(), moduleProxy, 5, -1);
+        this.gameModel = new Game(players.size(), moduleProxy, 17, -1);
         
         this.gameModel.getPresident().getCardAddingObserver().subscribe(
             new ActionObserver<ArrayList<Card>>((ArrayList<Card> cards) -> this.getCards(cards)));
@@ -73,34 +57,25 @@ public class GameController implements GameControllerModuleService {
         
         Integer ids[] = this.gameModel.getPlayersIds();
         for (int i=0; i<ids.length; i++) {
-            this.players[i].getPlayerData().modelID = ids[i];
+            players.get(i).setModelID(ids[i]);
         }
 
-        try {
-            FXMLLoader sceneLoader = new FXMLLoader(App.class.getResource("gameVisualization.fxml"));
-            this.scene = new Scene(sceneLoader.load(), 1200, 650);
-            this.gameVisualization = sceneLoader.getController();
-            this.gameVisualization.setGameContrlProxy(this.visualProxy);
-        } catch(IOException e) {
-            System.out.println(e.getMessage());
-        }
+        this.players = players;
 
-        this.scene.widthProperty().addListener((observable, oldValue, newValue) -> {
-            this.gameVisualization.resizeMainMuneX(oldValue, newValue);
-        });
+        this.visualProxy = (GameControllerVisualService) Proxy.newProxyInstance(
+            GameControllerVisualService.class.getClassLoader(), 
+            new Class<?>[]{GameControllerVisualService.class}, 
+            new InvocationHandlerGameContrl(this)
+        );
 
-        this.scene.heightProperty().addListener((observable, oldValue, newValue) -> {
-            this.gameVisualization.resizeMainMuneY(oldValue, newValue);
-        });
-
-        System.out.println("Game model created");
-        // this.test();
+        for (HumanPlayerGameManager player : humanPlayers)
+            player.setProxyGameController(this.visualProxy);
     }
 
     public void requestVoting(Voting voting) {
-        for (Player player : this.players) {
-            if (voting.isInGroup(player.getPlayerData().modelID))
-                player.voteForChancler(voting);
+        for (PlayerGameManager player : this.players) {
+            if (voting.isInGroup(player.getModelID()))
+                player.voteForChancellor(voting);
         }
     }
 
@@ -133,11 +108,11 @@ public class GameController implements GameControllerModuleService {
                     break;
                 case "chooseChancellor":
                     num = scanner.nextInt();
-                    this.gameModel.getPresident().suggestingChancellor(players[num].getPlayerData().modelID);
+                    this.gameModel.getPresident().suggestingChancellor(players.get(num).getModelID());
                     break;
                 case "setNextPres":
                     num = scanner.nextInt();
-                    this.gameModel.getPresident().choosingNextPresident(players[num].getPlayerData().modelID);
+                    this.gameModel.getPresident().choosingNextPresident(players.get(num).getModelID());
                     break;
                 case "activeNextPres":
                     this.gameModel.getPresident().expandPower(rights.ChoosingNextPresident, 1);

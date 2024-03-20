@@ -6,32 +6,31 @@ import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.stage.Stage;
 import java.io.IOException;
+import java.util.ArrayList;
+
 import GameController.GameController;
+import PlayerGameManager.HumanPlayerGameManager;
 
 public class App extends Application {
-
-    private static Scene scene;
     private GameController gameController;
+    private HumanPlayerGameManager player;
+    
 
     @Override
     public void start(Stage stage) throws IOException {
-        System.out.println(App.class.getResource(""));
-        
-        this.gameController = new GameController();
+        HumanPlayerGameManager player = new HumanPlayerGameManager();
+        player.initializeScreen();
+        this.player = player;
+
+        ArrayList<HumanPlayerGameManager> players = new ArrayList<>();
+        players.add(player);
+
+        this.gameController = new GameController(players, 9);
 
         System.out.println("Before set");
 
-        stage.setScene(this.gameController.getScene());
+        stage.setScene(player.getScene());
         stage.show();
-    }
-
-    static void setRoot(String fxml) throws IOException {
-        scene.setRoot(loadFXML(fxml));
-    }
-
-    public static Parent loadFXML(String fxml) throws IOException {
-        FXMLLoader fxmlLoader = new FXMLLoader(App.class.getResource(fxml + ".fxml"));
-        return fxmlLoader.load();
     }
 
     public static void main(String[] args) {

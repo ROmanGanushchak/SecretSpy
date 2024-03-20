@@ -1,7 +1,6 @@
 package test_ui;
 
 import model.ChangebleRole.President;
-import model.ChangebleRole.President.rights;
 import test_ui.Components.LiberalBoardController;
 import test_ui.Components.SpyBoardController;
 import GameController.GameControllerVisualService;
@@ -45,11 +44,17 @@ public class GameVisualization{ // game visualization має компонент�
     }
 
     public void resizeMainMuneX(Number oldNumber, Number newNumber) {
-        lastTransformation.setX((newNumber.doubleValue() / oldNumber.doubleValue()) * lastTransformation.getX());
+        if (oldNumber.doubleValue() == 0)
+            lastTransformation.setX(1);
+        else 
+            lastTransformation.setX((newNumber.doubleValue() / oldNumber.doubleValue()) * lastTransformation.getX());
     }
 
     public void resizeMainMuneY(Number oldNumber, Number newNumber) {
-        lastTransformation.setY((newNumber.doubleValue() / oldNumber.doubleValue()) * lastTransformation.getY());
+        if (oldNumber.doubleValue() == 0)
+            lastTransformation.setX(1);
+        else 
+            lastTransformation.setY((newNumber.doubleValue() / oldNumber.doubleValue()) * lastTransformation.getY());
     }
 
     public Pair<Number, Number> getMainSurfaceSize() {
@@ -59,10 +64,10 @@ public class GameVisualization{ // game visualization має компонент�
     @FXML
     public void initialize() {
         try {
+            System.out.println("Visual initialize");
             this.lastTransformation = new Scale(1, 1, 0, 0);
             mainPlane.getTransforms().add(lastTransformation);
 
-            System.out.println(App.class.getResource("liberalBoard.fxml"));
             Parent liberal = Component.initialize(App.class.getResource("liberalBoard.fxml"), this.liberalBoard);
             Parent spy = Component.initialize(App.class.getResource("spyBoard.fxml"), this.spyBoard);
             this.voteManeger = new VoteManeger(this.voteSurface);
