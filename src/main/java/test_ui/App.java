@@ -11,7 +11,6 @@ import PlayerGameManager.HumanPlayerGameManager;
 public class App extends Application {
     private GameController gameController;
     private HumanPlayerGameManager player;
-    
 
     @Override
     public void start(Stage stage) throws IOException {
@@ -23,13 +22,10 @@ public class App extends Application {
         players.add(player);
 
         this.gameController = new GameController(players, 9);
-        // Thread consoleThread = new Thread(this.gameController);
-        // consoleThread.setDaemon(true); // Mark the thread as a daemon so it doesn't prevent the application from exiting
-        // consoleThread.start();
-
-        System.out.println("Before set");
 
         stage.setScene(player.getScene());
+        stage.setMinWidth(1100);
+        stage.setMinHeight(600);
         stage.show();
     }
 

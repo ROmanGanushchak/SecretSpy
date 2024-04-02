@@ -54,4 +54,6 @@ public class VoteComponentController {
     public ObserversAccess<ActionObserver<Boolean>> getVoteResultObservers() {
         return this.voteResultObserves;
     } 
+
+    
 }

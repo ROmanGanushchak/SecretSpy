@@ -1,9 +1,9 @@
 package test_ui;
 
-import model.ChangebleRole.President;
 import model.Observers.ActionObserver;
 import model.Observers.ObserversAccess;
 import test_ui.Components.LiberalBoardController;
+import test_ui.Components.RevealeRoleController;
 import test_ui.Components.SpyBoardController;
 import GameController.GameControllerVisualService;
 
@@ -13,26 +13,25 @@ import javafx.fxml.FXML;
 import javafx.scene.Parent;
 import javafx.scene.control.Button;
 import javafx.scene.control.TextField;
+import javafx.scene.image.Image;
 import javafx.scene.layout.AnchorPane;
 import javafx.scene.transform.Scale;
 import javafx.util.Pair;
 
 public class GameVisualization{ // game visualization має компоненти спільні для всіх гравців
-
-    // @FXML
-    // private Button commandExecute;
-
-    // @FXML
-    // private TextField commandLine;
-
+    @FXML
+    private AnchorPane basePane;
+    @FXML
+    private AnchorPane mainPlane;
+    @FXML
+    private AnchorPane popupPlane;
     @FXML
     private Button comandExcut;
+    @FXML
+    private AnchorPane revealingRolePlane;
 
     @FXML
     private TextField comandLine;
-
-    @FXML
-    private AnchorPane mainPlane;
 
     @FXML
     private AnchorPane liberalBoard;
@@ -54,6 +53,9 @@ public class GameVisualization{ // game visualization має компонент�
 
     private LiberalBoardController liberalBoardController;
     private SpyBoardController spyBoardController;
+    private RevealeRoleController revealRoleController;
+
+    private Layers layers;
 
     @FXML
     void executComand(ActionEvent event) {
@@ -82,16 +84,28 @@ public class GameVisualization{ // game visualization має компонент�
     @FXML
     public void initialize() {
         try {
-            System.out.println("Visual initialize");
+            System.out.println("Model");
+            this.layers = new Layers(this.mainPlane, this.popupPlane);
+            this.layers.changeLayer(this.mainPlane);
+            
             this.lastTransformation = new Scale(1, 1, 0, 0);
             mainPlane.getTransforms().add(lastTransformation);
+            popupPlane.getTransforms().add(lastTransformation);
 
             Parent liberal = Component.initialize(App.class.getResource("liberalBoard.fxml"), this.liberalBoard);
             Parent spy = Component.initialize(App.class.getResource("spyBoard.fxml"), this.spyBoard);
+            Parent revealeRole = Component.initialize(App.class.getResource("revealRole.fxml"), this.revealingRolePlane);
+
             this.voteManeger = new VoteManeger(this.voteSurface);
+
+            this.voteManeger.getEndObservers().subscribe(
+                new ActionObserver<>((Integer i) -> this.layers.changeLayer(this.mainPlane)));
 
             this.liberalBoardController = (LiberalBoardController) liberal.getProperties().get("controller");
             this.spyBoardController = (SpyBoardController) spy.getProperties().get("controller");
+            this.revealRoleController = (RevealeRoleController) revealeRole.getProperties().get("controller");
+            this.revealRoleController.setup(new Image(App.class.getResourceAsStream("images/liberalCard.png")), (Scale)revealeRole.getProperties().get("scale"), lastTransformation);
+
             System.out.println("Game visuam initialized");
         } catch (Exception e) {
             System.out.println("unsuccesfull initilize of main controller");
@@ -99,15 +113,21 @@ public class GameVisualization{ // game visualization має компонент�
         }
     }
 
+    public void revealingRoleCardAnimation(Image image) {
+        
+    }
+
     public void setGameContrlProxy(GameControllerVisualService gameContrlProxy) {
         this.gameControllerProxy = gameContrlProxy;
     }
 
     public void startVoting(String presidentName, String chancellorName) {
+        this.layers.changeLayer(this.popupPlane);
         this.voteManeger.start(presidentName, chancellorName);
     }
 
     public void endVoting() {
+        this.layers.changeLayer(this.mainPlane);
         this.voteManeger.end();
     }
 

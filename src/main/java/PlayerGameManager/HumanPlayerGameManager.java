@@ -7,6 +7,9 @@ import GameController.GameControllerVisualService;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Scene;
 import model.Cards.CardsArray.Card;
+import model.ChangebleRole.Political.Right;
+import model.ChangebleRole.President;
+import model.Game.PlayerModel;
 import model.Observers.ActionObserver;
 import model.Voting.Voting;
 import test_ui.App;
@@ -25,8 +28,8 @@ public class HumanPlayerGameManager extends PlayerGameManager {
             System.out.println("Player initialize");
             FXMLLoader sceneLoader = new FXMLLoader(App.class.getResource("gameVisualization.fxml"));
             this.scene = new Scene(sceneLoader.load());
+            
             this.gameVisualization = sceneLoader.getController();
-            this.gameVisualization.setGameContrlProxy(this.gameController);
         } catch(IOException e) {
             System.out.println("Catch");
             System.out.println(e.getMessage());
@@ -50,10 +53,14 @@ public class HumanPlayerGameManager extends PlayerGameManager {
         );
     }
 
-    public void makePresident() {
+    public void makePresident(Right<President.rights> rights[]) {
 
     }
     
+    public void showRole(PlayerModel.mainRoles role) {
+        
+    }
+
     public void changeFailedVotingCount(int failedCount) {
         this.gameVisualization.getLiberalBoardController().moveVotingCircle(failedCount);
     }
@@ -94,7 +101,6 @@ public class HumanPlayerGameManager extends PlayerGameManager {
     }
 
     public Scene getScene() {
-        System.out.println(scene);
         return this.scene;
     }
 

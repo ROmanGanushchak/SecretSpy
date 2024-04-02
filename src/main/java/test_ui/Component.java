@@ -9,11 +9,14 @@ import javafx.scene.layout.AnchorPane;
 import javafx.scene.transform.Scale;
 
 public class Component {
-    public static void resize(Parent component, double width, double height) {
-        double scaleX = width / component.getBoundsInLocal().getWidth();
-        double scaleY = height / component.getBoundsInLocal().getHeight();
+    public static Scale resize(Parent component, double width, double height) {
+        double scaleX = width / component.prefWidth(-1);
+        double scaleY = height / component.prefHeight(-1);
 
-        component.getTransforms().add(new Scale(scaleX, scaleY, 0, 0));
+        Scale scale = new Scale(scaleX, scaleY);
+        component.getTransforms().add(scale);
+
+        return scale;
     }
 
     public static void resize(Parent component, double width, double height, Scale scale) {
@@ -42,10 +45,11 @@ public class Component {
         try {
             FXMLLoader loader = new FXMLLoader(fxml);
             Parent component = loader.load();
-            resize(component, surface.getPrefWidth(), surface.getPrefHeight());
-            surface.getChildren().add(component);
-            component.getProperties().put("controller", loader.getController());
 
+            component.getProperties().put("controller", loader.getController());
+            component.getProperties().put("scale", resize(component, surface.getPrefWidth(), surface.getPrefHeight()));
+
+            surface.getChildren().add(component);
             return component;
         } catch (IOException e) {
             System.out.println("Error while loading component");
@@ -92,27 +96,23 @@ public class Component {
         surface.setMouseTransparent(true);
         surface.setManaged(false);
         surface.setVisible(false);
-        surface.setPickOnBounds(false);
     }
 
     public static void reveal(AnchorPane surface) {
         surface.setMouseTransparent(false);
         surface.setManaged(true);
         surface.setVisible(true);
-        surface.setPickOnBounds(true);
     }
 
     public static void hide(Parent component) {
         component.setMouseTransparent(true);
         component.setManaged(false);
         component.setVisible(false);
-        component.setPickOnBounds(false);
     }
 
     public static void reveal(Parent component) {
         component.setMouseTransparent(false);
         component.setManaged(true);
         component.setVisible(true);
-        component.setPickOnBounds(true);
     }
 }

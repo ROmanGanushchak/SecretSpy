@@ -32,7 +32,13 @@ abstract class ChangebleRole {
 
 
 public abstract class Political<R extends Enum<R>> extends ChangebleRole {
-    private Map.Entry<R, Integer> currentRights[]; // -1 -> activated infinite count of use, 0 -> isnt activated, >=1 activated and has limited usage
+    public static class Right<R> extends AbstractMap.SimpleEntry<R, Integer> {
+        public Right(R r, Integer count) {
+            super(r, count);
+        }
+    }
+
+    private Right<R> currentRights[]; // -1 -> activated infinite count of use, 0 -> isnt activated, >=1 activated and has limited usage
     private ArrayList<Card> cards;
     private int cardsCount;
 
@@ -44,9 +50,9 @@ public abstract class Political<R extends Enum<R>> extends ChangebleRole {
         this.cardsCount = cardsCount;
         R[] constants = rights.getEnumConstants();
 
-        this.currentRights = (Map.Entry<R, Integer>[]) new Map.Entry[constants.length];
+        this.currentRights = new Right[constants.length];
         for (int i=0; i < constants.length; i++) {
-            currentRights[i] = new AbstractMap.SimpleEntry<>(constants[i], 0);
+            currentRights[i] = new Right<R>(constants[i], 0);
         }
 
         this.cardAddingObservers = new ActObservers<>();

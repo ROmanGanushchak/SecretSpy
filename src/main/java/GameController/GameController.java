@@ -6,8 +6,6 @@ import java.util.Map;
 import java.util.Scanner;
 
 import PlayerGameManager.*;
-import javafx.application.Platform;
-import javafx.scene.Scene;
 import model.Cards.CardsArray.Card;
 import model.ChangebleRole.Chancellor;
 import model.ChangebleRole.President;
@@ -25,8 +23,9 @@ public class GameController implements GameControllerModuleService,GameControlle
     private GameVisualization gameVisualization;
     private GameControllerVisualService visualProxy;
     private GameControllerModuleService moduleProxy;
-    private Scene scene;
     private Voting currentVoting;
+
+    private Scanner scanner = new Scanner(System.in);
 
     private ArrayList<Card> cards;
 
@@ -117,13 +116,8 @@ public class GameController implements GameControllerModuleService,GameControlle
         }
     }
 
-    public Scene getScene() {
-        return this.scene;
-    }
-
     public void executeCommand(String command) {
         int num;
-        Scanner scanner = new Scanner(System.in);
         switch (command) {
             // president
             case "cr":
@@ -178,7 +172,6 @@ public class GameController implements GameControllerModuleService,GameControlle
                 System.out.println(this.gameModel.getPresident().chooseCardToRemove(this.cards.get(num)));
                 break;
         }
-        scanner.close();
     }
 
     /*public static void main(String[] args) {

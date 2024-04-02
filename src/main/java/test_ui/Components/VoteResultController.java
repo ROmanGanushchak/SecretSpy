@@ -33,6 +33,9 @@ public class VoteResultController {
     }
 
     public void setup(boolean voteResult, String presidentName, ArrayList<String> yesVoteNames, ArrayList<String> noVoteNames) {
+        this.yesNamesHolder.getChildren().clear();
+        this.noNamesHolder.getChildren().clear();
+
         for (int i=0; i < yesVoteNames.size(); i++) {
             Label name = new Label();
             name.setText(yesVoteNames.get(i));

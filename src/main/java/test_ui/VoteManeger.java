@@ -29,6 +29,8 @@ public class VoteManeger {
         this.voteResult = Component.initialize(getClass().getResource("voteResult.fxml"), this.voteSurface);
         this.voteResultController = (VoteResultController) this.voteResult.getProperties().get("controller");
         this.voteResultController.initialize();
+
+        
         
         this.voteResultController.getContinueButtonObservers().subscribe(
             new ActionObserver<>((Integer num) -> end()) );
@@ -52,6 +54,7 @@ public class VoteManeger {
 
         Component.reveal(this.voteSurface);
         Component.reveal(this.voteComponent);
+        Component.hide(this.voteResult);
         animation.setOnFinished(e -> {
             this.voteSurface.setTranslateX(0);
             this.voteSurface.setTranslateY(0);
@@ -90,5 +93,9 @@ public class VoteManeger {
     
     public void setChancellorName(String name) {
         this.voteController.setChancellorName(name);
+    }
+
+    public ObserversAccess<ActionObserver<Integer>> getEndObservers() {
+        return this.voteResultController.getContinueButtonObservers();
     }
 }
