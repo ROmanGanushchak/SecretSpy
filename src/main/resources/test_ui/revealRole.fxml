@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
 <?import javafx.scene.control.Label?>
+<?import javafx.scene.image.Image?>
 <?import javafx.scene.image.ImageView?>
 <?import javafx.scene.layout.AnchorPane?>
 <?import javafx.scene.shape.Polygon?>
@@ -9,7 +10,7 @@
    <children>
       <AnchorPane fx:id="roleImagePlane" layoutX="176.0" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="312.0" prefWidth="236.0">
          <children>
-            <ImageView fx:id="roleImage" fitHeight="312.0" fitWidth="236.0" layoutX="-1.0" pickOnBounds="true" preserveRatio="true" />
+            <ImageView fx:id="roleImage" fitHeight="320.0" fitWidth="219.0" layoutX="8.0" pickOnBounds="true" preserveRatio="true" />
          </children>
       </AnchorPane>
       <AnchorPane fx:id="hidePane" layoutX="173.0" layoutY="-10.0" maxHeight="-Infinity" maxWidth="-Infinity" onMouseDragged="#mouseMove" onMousePressed="#mousePress" onMouseReleased="#mouseRelease" prefHeight="329.0" prefWidth="242.0" styleClass="card-hidear" stylesheets="@abilityStyle.css">
@@ -19,5 +20,10 @@
             <Label alignment="CENTER" layoutX="60.0" layoutY="219.0" prefHeight="30.0" prefWidth="121.0" styleClass="scroll-text" text="Move me up" />
          </children>
       </AnchorPane>
+      <ImageView fitHeight="101.0" fitWidth="98.0" layoutX="488.0" layoutY="14.0" onMousePressed="#exitMousePressed" pickOnBounds="true" preserveRatio="true">
+         <image>
+            <Image url="@images/exit-button.png" />
+         </image>
+      </ImageView>
    </children>
 </AnchorPane>

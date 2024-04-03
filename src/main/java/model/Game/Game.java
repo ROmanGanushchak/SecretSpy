@@ -162,7 +162,7 @@ public class Game implements GamePresidentAccess {
         voting.getEndingObservers().subscribe(
             new VoteObserver((boolean result, int candidate, Map<Integer, Boolean> votes) -> this.choosingChancellorResult(result, candidate, votes))
         );
-        this.gameContrlProxy.requestVoting(voting);
+        this.gameContrlProxy.requestVoting(voting, this.president.getPlayer().getId(), playerID);
         return true;
     }
 
@@ -310,6 +310,10 @@ public class Game implements GamePresidentAccess {
         }
 
         return array;
+    }
+
+    public PlayerModel.mainRoles getRole(int playerId) {
+        return this.players.get(playerId).getRole();
     }
 
     public PlayerModel[] getNonEligablePlayers() {

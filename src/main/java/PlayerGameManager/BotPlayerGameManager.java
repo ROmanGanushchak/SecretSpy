@@ -9,28 +9,40 @@ import model.Voting.Voting;
 
 public class BotPlayerGameManager extends PlayerGameManager {
     private GameControllerVisualService gameController;
-    private Random rand;
+    private Random rand = new Random();
 
     public void voteForChancellor(Voting voting) {
-        voting.vote(this.getModelID(), false);
+        voting.vote(this.getModelID(), true);
+    }
+
+    public void voteForChancellor(Voting voting, String presidentName, String chancellorName) {
+        voteForChancellor(voting);
     }
 
     public void makePresident(Right<President.rights> rights[]) {
-        int startIndex = rand.nextInt(rights.length), index;
+        // int startIndex = rand.nextInt(rights.length), index;
 
-        for (int i=0; i<rights.length; i++) {
-            index = (startIndex + i) % rights.length;
-            if (rights[i].getValue() == 0) continue;
+        // for (int i=0; i<rights.length; i++) {
+        //     index = (startIndex + i) % rights.length;
+        //     if (rights[i].getValue() == 0) continue;
 
-            switch (rights[i].getKey()) {
-                case ChoosingChancellor:
-                    // this.gameController.
-                    break;
+        //     switch (rights[i].getKey()) {
+        //         case ChoosingChancellor:
+        //             // this.gameController.
+        //             break;
             
-                default:
-                    break;
-            }
-        }
+        //         default:
+        //             break;
+        //     }
+        // }
+    }
+
+    public void unmakePresident() {
+
+    }
+
+    public void choosePlayer(String text) {
+
     }
 
     public void setProxyGameController(GameControllerVisualService gameController) {

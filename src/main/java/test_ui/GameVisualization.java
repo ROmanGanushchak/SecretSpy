@@ -2,6 +2,7 @@ package test_ui;
 
 import model.Observers.ActionObserver;
 import model.Observers.ObserversAccess;
+import test_ui.Components.AbilityController;
 import test_ui.Components.LiberalBoardController;
 import test_ui.Components.RevealeRoleController;
 import test_ui.Components.SpyBoardController;
@@ -15,45 +16,48 @@ import javafx.scene.control.Button;
 import javafx.scene.control.TextField;
 import javafx.scene.image.Image;
 import javafx.scene.layout.AnchorPane;
+import javafx.scene.layout.VBox;
 import javafx.scene.transform.Scale;
 import javafx.util.Pair;
 
 public class GameVisualization{ // game visualization має компоненти спільні для всіх гравців
+    
     @FXML
     private AnchorPane basePane;
+
     @FXML
     private AnchorPane mainPlane;
+
     @FXML
     private AnchorPane popupPlane;
+
     @FXML
     private Button comandExcut;
-    @FXML
-    private AnchorPane revealingRolePlane;
-
     @FXML
     private TextField comandLine;
 
     @FXML
     private AnchorPane liberalBoard;
-
     @FXML
     private AnchorPane spyBoard;
 
     @FXML
+    private AnchorPane presidentRightsPane;
+    @FXML
+    private AnchorPane revealeRolePane;
+    @FXML
     private AnchorPane voteSurface;
-    private VoteManeger voteManeger;
 
     @FXML
-    private AnchorPane presidntUiLayer;
-    @FXML
-    private Button button;
+    private VBox rightsHolder;
+
+    private VoteManeger voteManeger;
 
     private Scale lastTransformation;
     private GameControllerVisualService gameControllerProxy;
 
     private LiberalBoardController liberalBoardController;
     private SpyBoardController spyBoardController;
-    private RevealeRoleController revealRoleController;
 
     private Layers layers;
 
@@ -84,7 +88,6 @@ public class GameVisualization{ // game visualization має компонент�
     @FXML
     public void initialize() {
         try {
-            System.out.println("Model");
             this.layers = new Layers(this.mainPlane, this.popupPlane);
             this.layers.changeLayer(this.mainPlane);
             
@@ -94,7 +97,6 @@ public class GameVisualization{ // game visualization має компонент�
 
             Parent liberal = Component.initialize(App.class.getResource("liberalBoard.fxml"), this.liberalBoard);
             Parent spy = Component.initialize(App.class.getResource("spyBoard.fxml"), this.spyBoard);
-            Parent revealeRole = Component.initialize(App.class.getResource("revealRole.fxml"), this.revealingRolePlane);
 
             this.voteManeger = new VoteManeger(this.voteSurface);
 
@@ -103,8 +105,6 @@ public class GameVisualization{ // game visualization має компонент�
 
             this.liberalBoardController = (LiberalBoardController) liberal.getProperties().get("controller");
             this.spyBoardController = (SpyBoardController) spy.getProperties().get("controller");
-            this.revealRoleController = (RevealeRoleController) revealeRole.getProperties().get("controller");
-            this.revealRoleController.setup(new Image(App.class.getResourceAsStream("images/liberalCard.png")), (Scale)revealeRole.getProperties().get("scale"), lastTransformation);
 
             System.out.println("Game visuam initialized");
         } catch (Exception e) {
@@ -114,7 +114,18 @@ public class GameVisualization{ // game visualization має компонент�
     }
 
     public void revealingRoleCardAnimation(Image image) {
-        
+        this.layers.changeLayer(1);
+
+        Component.reveal(this.revealeRolePane);
+        Parent revealeRole = Component.initialize(App.class.getResource("revealRole.fxml"), this.revealeRolePane);
+        RevealeRoleController revealRoleController = (RevealeRoleController) revealeRole.getProperties().get("controller");
+        revealRoleController.setup(image, (Scale)revealeRole.getProperties().get("scale"));
+
+        revealRoleController.getExitObservers().subscribe(
+            new ActionObserver<>((Integer p) -> {
+                Component.hide(this.revealeRolePane);
+                this.layers.changeLayer(0);
+            }));
     }
 
     public void setGameContrlProxy(GameControllerVisualService gameContrlProxy) {
@@ -150,6 +161,10 @@ public class GameVisualization{ // game visualization має компонент�
 
     public VoteManeger getVoteManager() {
         return this.voteManeger;
+    }
+
+    public VBox getRightsHolder() {
+        return this.rightsHolder;
     }
 }
 

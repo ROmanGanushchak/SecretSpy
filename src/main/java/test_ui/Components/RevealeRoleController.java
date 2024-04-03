@@ -6,23 +6,30 @@ import javafx.scene.image.ImageView;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.AnchorPane;
 import javafx.scene.transform.Scale;
+import model.Observers.ActObservers;
+import model.Observers.ActionObserver;
+import model.Observers.ObserversAccess;
 
 public class RevealeRoleController {
     @FXML
     private AnchorPane hidePane;
-
     @FXML
     private ImageView roleImage;
-
     @FXML
     private AnchorPane roleImagePlane;
 
     private Scale surfaceScale;
-    private Scale screenScale;
 
     private double initialOffSetY;
     private double startingPosition;
     private double minLayoutY;
+
+    private ActObservers<Integer> exitButtonObservers;
+
+    @FXML
+    private void initialize() {
+        exitButtonObservers = new ActObservers<>();
+    }
 
     @FXML
     private void mouseMove(MouseEvent event) {
@@ -41,14 +48,17 @@ public class RevealeRoleController {
         this.hidePane.setLayoutY(startingPosition);
     }
 
-    public void setup(Image roleImage, Scale surfaceScale, Scale screenScale) {
+    @FXML
+    void exitMousePressed(MouseEvent event) {
+        exitButtonObservers.informAll(null);
+    }
+
+    public ObserversAccess<ActionObserver<Integer>> getExitObservers() {
+        return exitButtonObservers;
+    }
+
+    public void setup(Image roleImage, Scale surfaceScale) {
         this.roleImage.setImage(roleImage);
-
-        double scaleX = roleImagePlane.getPrefWidth() / roleImage.getWidth() * surfaceScale.getX();
-        double scaleY = roleImagePlane.getPrefHeight() / roleImage.getHeight();
-        this.roleImage.getTransforms().add(new Scale(scaleX, scaleY));
-
         this.surfaceScale = surfaceScale;
-        this.screenScale = screenScale;
     }
 }

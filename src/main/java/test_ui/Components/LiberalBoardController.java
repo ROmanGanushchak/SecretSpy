@@ -48,21 +48,19 @@ public class LiberalBoardController {
 
     @FXML
     void buttonPress(ActionEvent event) {
-        System.out.println("Card was pressed");
         this.showCard(this.index);
         this.index++;
     }
 
     @FXML
     void circlePress(ActionEvent event) {
-        System.out.println("Circle was pressed");
         this.moveVotingCircle(this.circleIndex);
         this.circleIndex = (this.circleIndex + 1) % this.circesCount;
     }
 
     @FXML
     public void initialize() {
-        System.out.println("Initialized");
+        System.out.println("Liberal Initialized");
         Image image = new Image(App.class.getResourceAsStream("images/liberalsCardsBoard.png"));
         this.boardImage.setImage(image);
 
@@ -91,7 +89,7 @@ public class LiberalBoardController {
     }
 
     public void moveVotingCircle(int index) {
-        if (index < 0 || index >= this.circesCount) throw new RuntimeException("Uncorrect index of array");
+        if (index < 0 || index >= this.circesCount) return;
         this.circles[index].setOpacity(1);
         this.circles[lastCircleActivated].setOpacity(0);
         this.lastCircleActivated = index;

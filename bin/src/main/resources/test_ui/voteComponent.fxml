@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.image.Image?>
+<?import javafx.scene.image.ImageView?>
+<?import javafx.scene.layout.AnchorPane?>
+<?import javafx.scene.text.Font?>
+
+<AnchorPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="400.0" prefWidth="585.0" style="-fx-background-color: rgba(255, 255, 255, 0);" xmlns="http://javafx.com/javafx/13" xmlns:fx="http://javafx.com/fxml/1" fx:controller="test_ui.Components.VoteComponentController">
+   <children>
+      <ImageView fx:id="backgroundImage" fitHeight="400.0" fitWidth="622.0" pickOnBounds="true" preserveRatio="true">
+         <image>
+            <Image url="@images/voteBackground.png" />
+         </image>
+      </ImageView>
+      <ImageView fx:id="yesVoteImage" fitHeight="117.0" fitWidth="180.0" layoutX="58.0" layoutY="200.0" onMousePressed="#yesVotePressed" pickOnBounds="true" preserveRatio="true">
+         <image>
+            <Image url="@images/yesVote.png" />
+         </image>
+      </ImageView>
+      <ImageView fx:id="noVoteImage" fitHeight="117.0" fitWidth="169.0" layoutX="356.0" layoutY="195.0" onMousePressed="#noVotePressed" pickOnBounds="true" preserveRatio="true">
+         <image>
+            <Image url="@images/noVote.png" />
+         </image>
+      </ImageView>
+      <Label alignment="CENTER" layoutX="179.0" layoutY="79.0" prefHeight="32.0" prefWidth="143.0" text="Mr president" textAlignment="CENTER" wrapText="true">
+         <font>
+            <Font name="Comic Sans MS" size="19.0" />
+         </font>
+      </Label>
+      <Label alignment="CENTER" layoutX="127.0" layoutY="105.0" prefHeight="24.0" prefWidth="313.0" text="Sugests for the role of chancler">
+         <font>
+            <Font name="Comic Sans MS" size="17.0" />
+         </font>
+      </Label>
+      <Label fx:id="presidentName" layoutX="312.0" layoutY="79.0" prefHeight="30.0" prefWidth="138.0" text="Player">
+         <font>
+            <Font name="Comic Sans MS" size="19.0" />
+         </font>
+      </Label>
+      <Label fx:id="chanclerName" alignment="CENTER" layoutX="222.0" layoutY="122.0" prefHeight="30.0" prefWidth="120.0" text="Player">
+         <font>
+            <Font name="Comic Sans MS" size="19.0" />
+         </font>
+      </Label>
+      <Label layoutX="198.0" layoutY="148.0" text="Vote for or against it">
+         <font>
+            <Font name="Comic Sans MS" size="16.0" />
+         </font>
+      </Label>
+      <ImageView fitHeight="98.0" fitWidth="102.0" layoutX="247.0" layoutY="220.0" pickOnBounds="true" preserveRatio="true">
+         <image>
+            <Image url="@images/voteAdder.png" />
+         </image>
+      </ImageView>
+   </children>
+</AnchorPane>

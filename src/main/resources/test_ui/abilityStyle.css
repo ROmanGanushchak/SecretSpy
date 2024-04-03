@@ -32,3 +32,39 @@
     -fx-font-size: 16;
     -fx-text-fill: #EAF3EB;
 }
+
+.rights_field .main-lable {
+    -fx-font-size: 35;
+    -fx-text-fill: #595959;
+}
+
+
+.ability {
+    -fx-background-radius: 29; 
+    -fx-border-radius: 29;
+    -fx-border-width: 2; 
+    -fx-background-color: #EAF3EB; 
+    -fx-border-color: #c5b5b5;
+}
+
+.ability .label { 
+    -fx-alignment: center; 
+    -fx-font-size: 15; 
+    -fx-font-family: "monospace"; 
+    -fx-text-fill: #4c5352;
+    -fx-font-weight: bold;
+}
+
+.ability .count-text {
+    -fx-font-size: 30;
+}
+
+.ability .circle {
+    -fx-fill: #52c2ca; 
+    -fx-border-width: 0;
+}
+
+.ability .use-circle {
+    -fx-fill: #66dc56; 
+    -fx-border-width: 0;
+}

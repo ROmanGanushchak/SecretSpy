@@ -2,8 +2,6 @@ package model.ChangebleRole;
 
 import java.util.AbstractMap;
 import java.util.ArrayList;
-import java.util.Map;
-
 import model.Cards.CardsArray.Card;
 import model.Game.PlayerModel;
 import model.Observers.ActObservers;
@@ -19,6 +17,7 @@ abstract class ChangebleRole {
     }
 
     public void change(PlayerModel player) {
+        System.out.println("Political chanded");
         this.player = player;
         if (player != null)
             this.playerChanges.informAll(player.getId());
@@ -27,6 +26,10 @@ abstract class ChangebleRole {
 
     public PlayerModel getPlayer() {
         return this.player;
+    }
+
+    public ObserversAccess<ActionObserver<Integer>> getPlayerChangesObservers() {
+        return this.playerChanges;
     }
 }
 
@@ -146,7 +149,7 @@ public abstract class Political<R extends Enum<R>> extends ChangebleRole {
         }
     }
 
-    public Map.Entry<R, Integer>[] getCurrentRights() {
+    public Right<R>[] getCurrentRights() {
         return this.currentRights;
     }
 

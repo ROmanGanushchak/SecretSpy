@@ -9,6 +9,7 @@ import PlayerGameManager.*;
 import model.Cards.CardsArray.Card;
 import model.ChangebleRole.Chancellor;
 import model.ChangebleRole.President;
+import model.ChangebleRole.Political.Right;
 import model.ChangebleRole.President.rights;
 import model.Game.Game;
 import model.Observers.ActionObserver;
@@ -16,7 +17,7 @@ import model.Voting.VoteObserver;
 import model.Voting.Voting;
 import test_ui.GameVisualization;
 
-public class GameController implements GameControllerModuleService,GameControllerVisualService {
+public class GameController implements GameControllerModuleService, GameControllerVisualService {
     private ArrayList<PlayerGameManager> players;
     private ArrayList<HumanPlayerGameManager> humanPlayers;
     private Game gameModel;
@@ -24,6 +25,7 @@ public class GameController implements GameControllerModuleService,GameControlle
     private GameControllerVisualService visualProxy;
     private GameControllerModuleService moduleProxy;
     private Voting currentVoting;
+    private Integer currentPresident;
 
     private Scanner scanner = new Scanner(System.in);
 
@@ -35,6 +37,15 @@ public class GameController implements GameControllerModuleService,GameControlle
         }System.out.println();
 
         this.cards = cards;
+    }
+
+    public void makePresident(Integer player) {
+        System.out.println("Make president");
+        if (currentPresident != null)
+            players.get(currentPresident).unmakePresident();
+        
+        players.get(player).makePresident(this.gameModel.getPresident().getCurrentRights());
+        currentPresident = player;
     }
 
     public GameController(ArrayList<HumanPlayerGameManager> humanPlayers, int botsCount) {
@@ -64,9 +75,9 @@ public class GameController implements GameControllerModuleService,GameControlle
         this.gameModel.getChancellor().getCardAddingObserver().subscribe(
             new ActionObserver<ArrayList<Card>>((ArrayList<Card> cards) -> this.getCards(cards)));
         
-        // this.gameModel.getPresident().getPowerChangerObserver().subscribe(
-        //     new ActionObserver<President.rights>((President.rights right) -> )
-        // );
+        this.gameModel.getPresident().getPlayerChangesObservers().subscribe(
+            new ActionObserver<Integer>((Integer player) -> makePresident(player))
+        );
         
         Integer ids[] = this.gameModel.getPlayersIds();
         for (int i=0; i<ids.length; i++) {
@@ -85,10 +96,15 @@ public class GameController implements GameControllerModuleService,GameControlle
             
             this.gameModel.getFailedElectionObservers().subscribe(
                 new ActionObserver<Integer>((Integer failed) -> player.changeFailedVotingCount(failed)) );
+            
+            player.showRole(this.gameModel.getRole(player.getModelID()));
         }
+
+        makePresident(this.gameModel.getPresident().getPlayer().getId());
+        currentPresident = this.gameModel.getPresident().getPlayer().getId();
     }
 
-    public void requestVoting(Voting voting) {
+    public void requestVoting(Voting voting, int presidentId, int chancellorId) {
         voting.getEndingObservers().subscribe(
             new VoteObserver( (boolean result, int candidateId, Map<Integer, Boolean> votes) ->
                 this.showVotingResults(result, candidateId, votes))
@@ -96,7 +112,7 @@ public class GameController implements GameControllerModuleService,GameControlle
 
         for (PlayerGameManager player : this.players) {
             if (voting.isInGroup(player.getModelID()))
-                player.voteForChancellor(voting);
+                player.voteForChancellor(voting, this.players.get(presidentId).getName(), this.players.get(chancellorId).getName());
         }
     }
 

@@ -1,9 +1,8 @@
 package model.ChangebleRole;
 
 import java.util.ArrayList;
-import java.util.Map;
-
 import model.Cards.CardsArray.Card;
+import model.ChangebleRole.Political.Right;
 import model.ChangebleRole.President.rights;
 import model.Game.PlayerModel;
 import model.Observers.ActionObserver;
@@ -17,12 +16,13 @@ public interface PresidentAccess {
     public Card[] checkingUpperThreeCards();
     public boolean choosingNextPresident(int playerId);
     public void killingPlayers(int playerId);
-    public Map.Entry<President.rights, Integer>[] getCurrentRights();
+    public Right<President.rights>[] getCurrentRights();
 
     public ObserversAccess<ActionObserver<ArrayList<Card>>> getCardChoosedObserver();
     public ObserversAccess<ActionObserver<ArrayList<Card>>> getCardAddingObserver();
     public ObserversAccess<ActionObserver<rights>> getPowerChangerObserver();
     public boolean chooseCardToRemove(Card card);
+    public ObserversAccess<ActionObserver<Integer>> getPlayerChangesObservers();
 
     public void expandPower(rights newRight, int maxUsageCount);
     public void lowerPower(rights newRight);
