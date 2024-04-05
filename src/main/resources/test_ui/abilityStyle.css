@@ -68,3 +68,11 @@
     -fx-fill: #66dc56; 
     -fx-border-width: 0;
 }
+
+.card-to-remove {
+    -fx-background-radius: 50;
+    -fx-background-color: white;
+    -fx-border-radius: 50;
+    -fx-border-color: black;
+    -fx-border-width: 2;
+}

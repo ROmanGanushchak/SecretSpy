@@ -1,14 +1,18 @@
 package test_ui;
 
+import model.Cards.CardsArray;
+import model.Observers.ActObservers;
 import model.Observers.ActionObserver;
 import model.Observers.ObserversAccess;
-import test_ui.Components.AbilityController;
+import test_ui.Components.CardRemovalController;
 import test_ui.Components.LiberalBoardController;
 import test_ui.Components.RevealeRoleController;
 import test_ui.Components.SpyBoardController;
 import GameController.GameControllerVisualService;
 
 import java.util.ArrayList;
+
+import javafx.animation.PauseTransition;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.scene.Parent;
@@ -18,6 +22,7 @@ import javafx.scene.image.Image;
 import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.VBox;
 import javafx.scene.transform.Scale;
+import javafx.util.Duration;
 import javafx.util.Pair;
 
 public class GameVisualization{ // game visualization має компоненти спільні для всіх гравців
@@ -30,6 +35,12 @@ public class GameVisualization{ // game visualization має компонент�
 
     @FXML
     private AnchorPane popupPlane;
+    private PopupLayerManager popupLayerManager;
+
+    @FXML
+    private AnchorPane onBoardPane;
+    @FXML
+    private AnchorPane cardRemovingPane;
 
     @FXML
     private Button comandExcut;
@@ -60,6 +71,8 @@ public class GameVisualization{ // game visualization має компонент�
     private SpyBoardController spyBoardController;
 
     private Layers layers;
+
+    private ActObservers<Integer> cardRemovalChooseObservers;
 
     @FXML
     void executComand(ActionEvent event) {
@@ -101,12 +114,12 @@ public class GameVisualization{ // game visualization має компонент�
             this.voteManeger = new VoteManeger(this.voteSurface);
 
             this.voteManeger.getEndObservers().subscribe(
-                new ActionObserver<>((Integer i) -> this.layers.changeLayer(this.mainPlane)));
+                new ActionObserver<>((Integer i) -> this.layers.changeLayerWithHide(this.mainPlane)));
 
             this.liberalBoardController = (LiberalBoardController) liberal.getProperties().get("controller");
             this.spyBoardController = (SpyBoardController) spy.getProperties().get("controller");
 
-            System.out.println("Game visuam initialized");
+            this.cardRemovalChooseObservers = new ActObservers<>();
         } catch (Exception e) {
             System.out.println("unsuccesfull initilize of main controller");
             e.printStackTrace();
@@ -124,8 +137,30 @@ public class GameVisualization{ // game visualization має компонент�
         revealRoleController.getExitObservers().subscribe(
             new ActionObserver<>((Integer p) -> {
                 Component.hide(this.revealeRolePane);
-                this.layers.changeLayer(0);
+                this.layers.changeLayerWithHide(0);
             }));
+    }
+
+    public void showCardsToRemove(ArrayList<CardsArray.Card> cards) {        
+        Parent cardRemoving = Component.initialize(App.class.getResource("cardRemoval.fxml"), this.cardRemovingPane);
+        CardRemovalController cardRemovalController = (CardRemovalController) cardRemoving.getProperties().get("controller");
+
+        PauseTransition pause = new PauseTransition(Duration.seconds(0.5));
+        pause.setOnFinished(e -> {
+            Component.hide(cardRemovingPane);
+            Component.reveal(onBoardPane);
+            layers.changeLayer(mainPlane);
+        });
+
+        cardRemovalController.setup(cards);
+        cardRemovalController.getCardSlotePressed().subscribe(
+            new ActionObserver<>((Integer index) -> {
+                this.cardRemovalChooseObservers.informAll(index);
+                pause.play(); }) );
+        
+        Component.hide(onBoardPane);
+        Component.reveal(cardRemovingPane);
+        layers.changeLayer(popupPlane);
     }
 
     public void setGameContrlProxy(GameControllerVisualService gameContrlProxy) {
@@ -133,12 +168,14 @@ public class GameVisualization{ // game visualization має компонент�
     }
 
     public void startVoting(String presidentName, String chancellorName) {
+        System.out.println("Start voting");
+        Component.reveal(voteSurface);
         this.layers.changeLayer(this.popupPlane);
         this.voteManeger.start(presidentName, chancellorName);
     }
 
     public void endVoting() {
-        this.layers.changeLayer(this.mainPlane);
+        this.layers.changeLayerWithHide(this.mainPlane);
         this.voteManeger.end();
     }
 
@@ -165,6 +202,10 @@ public class GameVisualization{ // game visualization має компонент�
 
     public VBox getRightsHolder() {
         return this.rightsHolder;
+    }
+
+    public ObserversAccess<ActionObserver<Integer>> getCardRemovalChooseObservers() {
+        return this.cardRemovalChooseObservers;
     }
 }
 

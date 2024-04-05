@@ -61,8 +61,6 @@ public class Component {
     }
 
     public static Scale resizeToFitIn(Node obj, Node edges) {
-        System.out.println("fiting");
-
         double adjustment = 1;
 
         System.out.println(obj.prefWidth(-1) + " " + edges.prefWidth(-1));
@@ -112,13 +110,7 @@ public class Component {
             return null;
         }
     }
-
-    // public static Parent initialize(URL fxml, double width, double height) {
-    //     Parent component = initialize(fxml);
-    //     resize(component, width, height);
-    //     return component;
-    // }
-
+    
     public static Parent load(URL fxml) {
         try {
             FXMLLoader loader = new FXMLLoader(fxml);
@@ -132,37 +124,29 @@ public class Component {
         }
     }
 
-    public static void hide(AnchorPane surface) {
-        surface.setMouseTransparent(true);
-        surface.setManaged(false);
-        surface.setVisible(false);
-    }
-
-    public static void reveal(AnchorPane surface) {
-        surface.setMouseTransparent(false);
-        surface.setManaged(true);
-        surface.setVisible(true);
-    }
-
     public static void hide(Node component) {
         component.setMouseTransparent(true);
         component.setManaged(false);
         component.setVisible(false);
+        component.setDisable(true);
     }
 
     public static void reveal(Node component) {
         component.setMouseTransparent(false);
         component.setManaged(true);
         component.setVisible(true);
+        component.setDisable(false);
     }
 
     public static void turnOff(Node component) {
         component.setMouseTransparent(true);
         component.setManaged(false);
+        component.setDisable(true);
     }
 
     public static void turnOn(Node component) {
         component.setMouseTransparent(false);
         component.setManaged(true);
+        component.setDisable(false);
     }
 }

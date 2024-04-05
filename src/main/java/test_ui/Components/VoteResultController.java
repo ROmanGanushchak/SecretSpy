@@ -10,8 +10,9 @@ import javafx.scene.layout.VBox;
 import model.Observers.ActObservers;
 import model.Observers.ActionObserver;
 import model.Observers.ObserversAccess;
+import test_ui.PopupLayerManager;
 
-public class VoteResultController {
+public class VoteResultController extends PopupLayerManager.PopupComponent {
 
     @FXML
     private Label textVoteResult;
@@ -58,7 +59,6 @@ public class VoteResultController {
 
     @FXML
     void continueButtonPressed(MouseEvent event) {
-        System.out.println("Continue pressed");
         this.continueButtonPressedObservers.informAll(0);
     }
 

@@ -1,9 +1,11 @@
 package PlayerGameManager;
 
+import java.util.ArrayList;
 import java.util.Random;
 
 import GameController.GameControllerVisualService;
 import model.ChangebleRole.President;
+import model.Cards.CardsArray;
 import model.ChangebleRole.Political.Right;
 import model.Voting.Voting;
 
@@ -47,6 +49,10 @@ public class BotPlayerGameManager extends PlayerGameManager {
 
     public void setProxyGameController(GameControllerVisualService gameController) {
         this.gameController = gameController;
+    }
+
+    public void giveCardsToRemove(ArrayList<CardsArray.Card> cards) {
+
     }
 
     public int getPlayerID() {return 0;}

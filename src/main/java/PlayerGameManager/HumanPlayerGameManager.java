@@ -9,6 +9,7 @@ import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.image.Image;
 import javafx.scene.layout.VBox;
+import model.Cards.CardsArray;
 import model.Cards.CardsArray.Card;
 import model.ChangebleRole.Political.Right;
 import model.ChangebleRole.Political;
@@ -98,6 +99,12 @@ public class HumanPlayerGameManager extends PlayerGameManager {
         this.gameVisualization.revealingRoleCardAnimation(cardImage);
     }
 
+    public void giveCardsToRemove(ArrayList<CardsArray.Card> cards) {
+        this.gameVisualization.getCardRemovalChooseObservers().subscribe(
+            new ActionObserver<>((Integer i) -> System.out.println("card was chosn " + i)));;
+        this.gameVisualization.showCardsToRemove(cards);
+    }
+
     public void choosePlayer(String text) {
 
     }
@@ -121,7 +128,8 @@ public class HumanPlayerGameManager extends PlayerGameManager {
     }
 
     public void voteForChancellor(Voting voting, String presidentName, String chancellorName) {
-        if (voting != null) 
+        System.out.println("Vote for chancellor in player");
+        if (this.currentVoting != null) 
             System.out.println("Trying to add voting while other didnt ended");
         this.currentVoting = voting;
         this.gameVisualization.startVoting(presidentName, chancellorName);

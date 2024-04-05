@@ -1,6 +1,9 @@
 package PlayerGameManager;
 
+import java.util.ArrayList;
+
 import GameController.GameControllerVisualService;
+import model.Cards.CardsArray;
 import model.ChangebleRole.Political.Right;
 import model.ChangebleRole.President;
 import model.Voting.Voting;
@@ -32,4 +35,5 @@ public abstract class PlayerGameManager {
     public abstract void makePresident(Right<President.rights> rights[]);
     public abstract void unmakePresident();
     public abstract void choosePlayer(String text);
+    public abstract void giveCardsToRemove(ArrayList<CardsArray.Card> cards);
 }

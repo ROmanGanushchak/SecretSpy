@@ -70,7 +70,8 @@ public class GameController implements GameControllerModuleService, GameControll
         this.gameModel = new Game(players.size(), moduleProxy, 17, -1);
         
         this.gameModel.getPresident().getCardAddingObserver().subscribe(
-            new ActionObserver<ArrayList<Card>>((ArrayList<Card> cards) -> this.getCards(cards)));
+            new ActionObserver<ArrayList<Card>>(( 
+                ArrayList<Card> cards) -> this.players.get(currentPresident).giveCardsToRemove(cards)));
         
         this.gameModel.getChancellor().getCardAddingObserver().subscribe(
             new ActionObserver<ArrayList<Card>>((ArrayList<Card> cards) -> this.getCards(cards)));

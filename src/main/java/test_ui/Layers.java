@@ -13,21 +13,12 @@ public class Layers {
     }
 
     public Layers(AnchorPane... layers) {
-        System.out.println("Layers initiaize");
+        System.out.println("Layer changed");
         this.layers = new ArrayList<>(layers.length);
-        System.out.println("Array created");
         for (AnchorPane layer : layers) {
-            layer.setMouseTransparent(true);
-            layer.setManaged(false);
+            Component.turnOff(layer);
             this.layers.add(layer);
         }
-        System.out.println("Init ended");
-    }
-
-    private static void activate(AnchorPane layer) {
-        layer.setVisible(true);
-        layer.setManaged(true);
-        layer.setMouseTransparent(false);
     }
 
     public void changeLayer(AnchorPane newLayer) {
@@ -36,16 +27,15 @@ public class Layers {
             this.currentLayer.setManaged(false);
         }
         
-        activate(newLayer);
+        Component.reveal(newLayer);
         this.currentLayer = newLayer;
     }
 
     public void changeLayerWithHide(AnchorPane newLayer) {
-        if (this.currentLayer != null) {
+        if (this.currentLayer != null) 
             Component.hide(this.currentLayer);
-        }
         
-        activate(newLayer);
+        Component.turnOn(newLayer);
         this.currentLayer = newLayer;
     }
 
