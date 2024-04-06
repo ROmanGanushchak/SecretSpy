@@ -1,45 +1,31 @@
 package test_ui;
 
-import java.io.IOException;
+import java.util.LinkedList;
 import java.util.Queue;
-import javafx.fxml.FXMLLoader;
+
 import javafx.scene.Parent;
 import javafx.scene.layout.Pane;
+import test_ui.Components.Component.Component;
+import test_ui.Components.Component.ParentUpdaters.PaneParentUpdater;
 
 public class PopupLayerManager {
-    public static abstract class PopupComponent {
-        private Parent component;
-
-        protected void initialize(String fxmlName) {
-            FXMLLoader loader = new FXMLLoader(App.class.getResource(fxmlName));
-            loader.setController(this);
-
-            try {
-                this.component = loader.load();
-            } catch(IOException e) {
-                throw new RuntimeException(e);
-            }
+    public static abstract class PopupComponent extends Component {
+        public PopupComponent(Pane parent) {
+            super(new PaneParentUpdater(parent));
         }
 
-        protected Parent initialize(String fxmlName, Pane surface) {
-            initialize(fxmlName);
-
-            component.getProperties().put("scale", Component.resize(component, surface.getPrefWidth(), surface.getPrefHeight()));
-            surface.getChildren().add(component);
-
-            return component;
+        @Override
+        protected void setComponent(Parent component) {
+            super.setComponent(component);
+            super.hide();
         }
 
         public void activate() {
-            Component.reveal(this.component);
+            super.reveal();
         }
 
         public void finish() {
-            Component.hide(this.component);
-        }
-
-        public Parent getComponent() {
-            return this.component;
+            super.hide();
         }
     }
 
@@ -48,20 +34,25 @@ public class PopupLayerManager {
 
     private Pane popupSurface;
     public PopupLayerManager(Pane popupSurface) {
+        componentsToActivate = new LinkedList<>();
         this.popupSurface = popupSurface;
+        Component.hide(popupSurface);
     }
 
     public void askActivation(PopupComponent component) {
+        System.out.println("Activation asked");
         if (currentComponent == null) {
+            System.out.println("new activation");
+            Component.reveal(popupSurface);
             component.activate();
             currentComponent = component;
-            Component.reveal(popupSurface);
         }
         else
             componentsToActivate.add(component);
     }
 
     public void finishCurent() {
+        System.out.println("Finished");
         currentComponent.finish();
 
         currentComponent = componentsToActivate.poll();

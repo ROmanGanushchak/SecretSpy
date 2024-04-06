@@ -4,10 +4,12 @@ import model.Cards.CardsArray;
 import model.Observers.ActObservers;
 import model.Observers.ActionObserver;
 import model.Observers.ObserversAccess;
+import test_ui.Components.AbilityController;
 import test_ui.Components.CardRemovalController;
 import test_ui.Components.LiberalBoardController;
 import test_ui.Components.RevealeRoleController;
 import test_ui.Components.SpyBoardController;
+import test_ui.Components.Component.Component;
 import GameController.GameControllerVisualService;
 
 import java.util.ArrayList;
@@ -19,6 +21,7 @@ import javafx.scene.Parent;
 import javafx.scene.control.Button;
 import javafx.scene.control.TextField;
 import javafx.scene.image.Image;
+import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.VBox;
 import javafx.scene.transform.Scale;
@@ -70,8 +73,6 @@ public class GameVisualization{ // game visualization має компонент�
     private LiberalBoardController liberalBoardController;
     private SpyBoardController spyBoardController;
 
-    private Layers layers;
-
     private ActObservers<Integer> cardRemovalChooseObservers;
 
     @FXML
@@ -101,24 +102,16 @@ public class GameVisualization{ // game visualization має компонент�
     @FXML
     public void initialize() {
         try {
-            this.layers = new Layers(this.mainPlane, this.popupPlane);
-            this.layers.changeLayer(this.mainPlane);
-            
+            this.popupLayerManager = new PopupLayerManager(popupPlane);
+
             this.lastTransformation = new Scale(1, 1, 0, 0);
             mainPlane.getTransforms().add(lastTransformation);
             popupPlane.getTransforms().add(lastTransformation);
 
-            Parent liberal = Component.initialize(App.class.getResource("liberalBoard.fxml"), this.liberalBoard);
-            Parent spy = Component.initialize(App.class.getResource("spyBoard.fxml"), this.spyBoard);
+            this.liberalBoardController = new LiberalBoardController(liberalBoard);
+            this.spyBoardController = new SpyBoardController(spyBoard);
 
-            this.voteManeger = new VoteManeger(this.voteSurface);
-
-            this.voteManeger.getEndObservers().subscribe(
-                new ActionObserver<>((Integer i) -> this.layers.changeLayerWithHide(this.mainPlane)));
-
-            this.liberalBoardController = (LiberalBoardController) liberal.getProperties().get("controller");
-            this.spyBoardController = (SpyBoardController) spy.getProperties().get("controller");
-
+            this.voteManeger = new VoteManeger(this.voteSurface, popupLayerManager);
             this.cardRemovalChooseObservers = new ActObservers<>();
         } catch (Exception e) {
             System.out.println("unsuccesfull initilize of main controller");
@@ -127,29 +120,20 @@ public class GameVisualization{ // game visualization має компонент�
     }
 
     public void revealingRoleCardAnimation(Image image) {
-        this.layers.changeLayer(1);
+        RevealeRoleController revealRole = new RevealeRoleController(this.revealeRolePane);
+        revealRole.setup(image, (Scale)revealRole.getComponent().getProperties().get("scale"));
+        revealRole.getExitObservers().subscribe(new ActionObserver<>((Integer p) -> popupLayerManager.finishCurent()));
 
-        Component.reveal(this.revealeRolePane);
-        Parent revealeRole = Component.initialize(App.class.getResource("revealRole.fxml"), this.revealeRolePane);
-        RevealeRoleController revealRoleController = (RevealeRoleController) revealeRole.getProperties().get("controller");
-        revealRoleController.setup(image, (Scale)revealeRole.getProperties().get("scale"));
-
-        revealRoleController.getExitObservers().subscribe(
-            new ActionObserver<>((Integer p) -> {
-                Component.hide(this.revealeRolePane);
-                this.layers.changeLayerWithHide(0);
-            }));
+        popupLayerManager.askActivation(revealRole);
     }
 
     public void showCardsToRemove(ArrayList<CardsArray.Card> cards) {        
-        Parent cardRemoving = Component.initialize(App.class.getResource("cardRemoval.fxml"), this.cardRemovingPane);
-        CardRemovalController cardRemovalController = (CardRemovalController) cardRemoving.getProperties().get("controller");
+        CardRemovalController cardRemovalController = new CardRemovalController(this.cardRemovingPane);
 
         PauseTransition pause = new PauseTransition(Duration.seconds(0.5));
         pause.setOnFinished(e -> {
-            Component.hide(cardRemovingPane);
             Component.reveal(onBoardPane);
-            layers.changeLayer(mainPlane);
+            popupLayerManager.finishCurent();
         });
 
         cardRemovalController.setup(cards);
@@ -159,8 +143,7 @@ public class GameVisualization{ // game visualization має компонент�
                 pause.play(); }) );
         
         Component.hide(onBoardPane);
-        Component.reveal(cardRemovingPane);
-        layers.changeLayer(popupPlane);
+        popupLayerManager.askActivation(cardRemovalController);
     }
 
     public void setGameContrlProxy(GameControllerVisualService gameContrlProxy) {
@@ -169,18 +152,14 @@ public class GameVisualization{ // game visualization має компонент�
 
     public void startVoting(String presidentName, String chancellorName) {
         System.out.println("Start voting");
-        Component.reveal(voteSurface);
-        this.layers.changeLayer(this.popupPlane);
         this.voteManeger.start(presidentName, chancellorName);
     }
 
     public void endVoting() {
-        this.layers.changeLayerWithHide(this.mainPlane);
         this.voteManeger.end();
     }
 
     public ObserversAccess<ActionObserver<Boolean>> getVotingResultObservers() {
-        System.out.println("get vote observer");
         return this.voteManeger.getVotingResultObservers();
     }
 

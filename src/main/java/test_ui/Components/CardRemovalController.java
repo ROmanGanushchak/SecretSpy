@@ -9,25 +9,27 @@ import javafx.fxml.FXML;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.input.MouseEvent;
+import javafx.scene.layout.Pane;
 import javafx.util.Duration;
 import model.Cards.CardsArray;
 import model.Observers.ActObservers;
 import model.Observers.ActionObserver;
 import model.Observers.ObserversAccess;
 import test_ui.App;
-import test_ui.Component;
+import test_ui.PopupLayerManager;
+import test_ui.Components.Component.Component;
 
-public class CardRemovalController{
+public class CardRemovalController extends PopupLayerManager.PopupComponent {
     @FXML
-    private ImageView  cardSlote1;
+    private ImageView cardSlote1;
     @FXML
-    private ImageView  cardSlote2;
+    private ImageView cardSlote2;
     @FXML
-    private ImageView  cardSlote3;
+    private ImageView cardSlote3;
     @FXML
-    private ImageView  cardSlote4;
+    private ImageView cardSlote4;
     @FXML
-    private ImageView  cardSlote5;
+    private ImageView cardSlote5;
 
     private Image liberalImage;
     private Image spyImage;
@@ -38,6 +40,12 @@ public class CardRemovalController{
 
     private double scaleAnimationTime = 0.1;
     private double scaleAnimationValue = 0.2;
+
+    public CardRemovalController(Pane surface) {
+        super(surface);
+        super.initialize(App.class.getResource("fxml/cardRemoval.fxml"), surface);
+        this.cardSlotePressed = new ActObservers<>();
+    }
 
     @FXML
     private void initialize() {
@@ -51,8 +59,6 @@ public class CardRemovalController{
 
         this.liberalImage = new Image(App.class.getResourceAsStream("images/liberalCard.png"));
         this.spyImage = new Image(App.class.getResourceAsStream("images/spyCard.png"));
-
-        this.cardSlotePressed = new ActObservers<>();
 
         for (int i=0; i<slotes.size(); i++) {
             final int index = i;

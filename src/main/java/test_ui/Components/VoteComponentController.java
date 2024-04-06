@@ -9,32 +9,28 @@ import model.Observers.ActionObserver;
 import model.Observers.ObserversAccess;
 
 public class VoteComponentController {
-
     @FXML
     private ImageView backgroundImage;
 
     @FXML
     private ImageView yesVoteImage;
-
     @FXML
     private ImageView noVoteImage;
 
     @FXML
     private Label presidentName;
-    
     @FXML
     private Label chanclerName;
 
     private ActObservers<Boolean> voteResultObserves;
 
-    public void setPresidentName(String name) {
-        System.out.println(name);
-        this.presidentName.setText(name);
-    }
-
     @FXML
     public void initialize() {
         this.voteResultObserves = new ActObservers<>();
+    }
+
+    public void setPresidentName(String name) {
+        this.presidentName.setText(name);
     }
 
     public void setChancellorName(String name) {
@@ -53,7 +49,5 @@ public class VoteComponentController {
 
     public ObserversAccess<ActionObserver<Boolean>> getVoteResultObservers() {
         return this.voteResultObserves;
-    } 
-
-    
+    }
 }

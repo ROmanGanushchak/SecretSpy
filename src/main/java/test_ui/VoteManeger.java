@@ -10,8 +10,9 @@ import model.Observers.ActionObserver;
 import model.Observers.ObserversAccess;
 import test_ui.Components.VoteComponentController;
 import test_ui.Components.VoteResultController;
+import test_ui.Components.Component.Component;
 
-public class VoteManeger {
+public class VoteManeger extends PopupLayerManager.PopupComponent {
     private AnchorPane voteSurface;
     private double voteSurfaceAnimationTime = 1.5;
 
@@ -19,19 +20,23 @@ public class VoteManeger {
     private Parent voteResult;
     private VoteComponentController voteController;
     private VoteResultController voteResultController;
+    
+    private PopupLayerManager popupLayerManager;
 
-    public VoteManeger(AnchorPane voteSurface) {
+    public VoteManeger(AnchorPane voteSurface, PopupLayerManager popupLayerManager) {
+        super(voteSurface);
+        super.setComponent(voteSurface);
+
+        this.popupLayerManager = popupLayerManager;
         this.voteSurface = voteSurface;
-        this.voteComponent = Component.initialize(getClass().getResource("voteComponent.fxml"), this.voteSurface);
+
+        this.voteComponent = Component.initialize(getClass().getResource("fxml/voteComponent.fxml"), this.voteSurface);
         this.voteController = (VoteComponentController) this.voteComponent.getProperties().get("controller");
 
-        System.out.println("before result load");
-        this.voteResult = Component.initialize(getClass().getResource("voteResult.fxml"), this.voteSurface);
+        this.voteResult = Component.initialize(getClass().getResource("fxml/voteResult.fxml"), this.voteSurface);
         this.voteResultController = (VoteResultController) this.voteResult.getProperties().get("controller");
         this.voteResultController.initialize();
 
-        
-        
         this.voteResultController.getContinueButtonObservers().subscribe(
             new ActionObserver<>((Integer num) -> end()) );
 
@@ -48,39 +53,42 @@ public class VoteManeger {
     }
 
     public void start(String presidentName, String chancellorName) {
+        this.voteController.setPresidentName(presidentName);
+        this.voteController.setChancellorName(chancellorName);
+
+        popupLayerManager.askActivation(this);    
+    }
+
+    @Override
+    public void activate() {
+        super.activate();
         TranslateTransition animation = new TranslateTransition(Duration.seconds(this.voteSurfaceAnimationTime), this.voteSurface);
         animation.setFromY(((AnchorPane) this.voteSurface.getParent()).getHeight());
         animation.setToY(0); 
 
-        Component.reveal(this.voteSurface);
         Component.reveal(this.voteComponent);
         Component.hide(this.voteResult);
         animation.setOnFinished(e -> {
             this.voteSurface.setTranslateX(0);
             this.voteSurface.setTranslateY(0);
         });
-        animation.play();     
-
-        this.voteController.setPresidentName(presidentName);
-        this.voteController.setChancellorName(chancellorName);
+        animation.play(); 
     }
 
     public void end() {
-        this.voteComponent.setVisible(true);
         TranslateTransition animation = new TranslateTransition(Duration.seconds(this.voteSurfaceAnimationTime), this.voteSurface);
         animation.setFromY(0);
         animation.setToY(((AnchorPane) this.voteSurface.getParent()).getHeight()); 
-        System.out.println(((AnchorPane) this.voteSurface.getParent()).getHeight());
-
+        
         animation.setOnFinished(e -> {
-            Component.hide(this.voteSurface);
             Component.hide(this.voteComponent);
             Component.hide(this.voteResult);
             this.voteSurface.setTranslateX(0);
             this.voteSurface.setTranslateY(0);
+            popupLayerManager.finishCurent();
         });
 
-        animation.play();  
+        animation.play();
     }
 
     public ObserversAccess<ActionObserver<Boolean>> getVotingResultObservers() {

@@ -1,0 +1,93 @@
+.rounded-pane {
+    -fx-background-radius: 10;
+}
+
+.role-revealing {
+    -fx-background-color: #FAF3EB;
+}
+
+.role-revealing .card-hidear {
+    -fx-border-radius: 10;
+    -fx-background-radius: 10;
+
+    -fx-background-color: #9A9A9A;
+
+    -fx-border-width: 3;
+    -fx-border-color: #999999;
+}
+
+.role-revealing .triangle {
+    -fx-fill: #CCCCCC;
+    -fx-border-radius: 0;
+}
+
+.role-revealing .scroll-text {
+    -fx-text-alignment: center;
+    -fx-font-size: 20;
+    -fx-text-fill: #EAF3EB;
+}
+
+.role-revealing .under-scroll-text {
+    -fx-text-alignment: center;
+    -fx-font-size: 16;
+    -fx-text-fill: #EAF3EB;
+}
+
+.rights_field .main-lable {
+    -fx-font-size: 35;
+    -fx-text-fill: #595959;
+}
+
+.ability {
+    -fx-background-radius: 29; 
+    -fx-border-radius: 29;
+    -fx-border-width: 2; 
+    -fx-background-color: #EAF3EB; 
+    -fx-border-color: #c5b5b5;
+}
+
+.ability .label { 
+    -fx-alignment: center; 
+    -fx-font-size: 15; 
+    -fx-font-family: "monospace"; 
+    -fx-text-fill: #4c5352;
+    -fx-font-weight: bold;
+}
+
+.ability .count-text {
+    -fx-font-size: 30;
+}
+
+.ability .circle {
+    -fx-fill: #52c2ca; 
+    -fx-border-width: 0;
+}
+
+.ability .use-circle {
+    -fx-fill: #66dc56; 
+    -fx-border-width: 0;
+}
+
+.card-to-remove .label {
+    -fx-font-size: 20;
+    -fx-text-fill: #3a393a;
+}
+
+.player-field {
+    -fx-border-radius: 20;
+    -fx-background-radius: 25;
+
+    /* -fx-background-color: #d6bfaf; */
+    /* -fx-background-color: linear-gradient(from 0% 0% to 100% 0%, stop 0 red, stop 1 blue); */
+
+    -fx-border-width: 3;
+    -fx-border-color: #d6c6ae;
+}
+
+.player-field .right-up-pane {
+    /* -fx-background-color: #c23e1d; */
+}
+
+.player-field .right-down-pane {
+    /* -fx-background-color: #1d20c2; */
+}

@@ -11,14 +11,17 @@ import javafx.scene.Node;
 import javafx.scene.control.Label;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.AnchorPane;
+import javafx.scene.layout.VBox;
 import javafx.scene.shape.Circle;
 import javafx.util.Duration;
 import model.Observers.ActObservers;
 import model.Observers.ActionObserver;
 import model.Observers.ObserversAccess;
-import test_ui.Component;
+import test_ui.App;
+import test_ui.Components.Component.Component;
+import test_ui.Components.Component.ParentUpdaters.VBoxParentUpdater;
 
-public class AbilityController {
+public class AbilityController extends Component {
     @FunctionalInterface
     public interface AnimationFinishedNoification {
         void animationStoped();
@@ -56,11 +59,16 @@ public class AbilityController {
     private AnimationFinishedNoification currentCircleAnimationStop;
     private AnimationFinishedNoification currentTextAnimationStop = () -> {};
 
+    public AbilityController(VBox vbox) {
+        super(new VBoxParentUpdater(vbox));
+        super.initialize(App.class.getResource("fxml/ability.fxml"), vbox);
+        useButtonObservers = new ActObservers<>();
+    }
+
     @FXML
     private void initialize() {
         currentCircleAnimation = new TranslateTransition();
         currentTextAnimation = new TranslateTransition();
-        useButtonObservers = new ActObservers<>();
 
         Component.hide(usePane);
         usePane.setOpacity(0);

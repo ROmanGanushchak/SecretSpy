@@ -20,6 +20,7 @@ public class President extends Political<President.rights> implements PresidentA
         this.game = game;
 
         this.expandPower(rights.ChoosingChancellor, -1);
+        this.expandPower(rights.CheckingUpperThreeCards, 1);
     }
     
     public boolean suggestingChancellor(int playerID) {

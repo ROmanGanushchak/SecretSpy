@@ -5,10 +5,13 @@ import javafx.fxml.FXML;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.AnchorPane;
+import javafx.scene.layout.Pane;
 import javafx.scene.shape.Circle;
 import test_ui.App;
+import test_ui.Components.Component.Component;
+import test_ui.Components.Component.ParentUpdaters.PaneParentUpdater;
 
-public class LiberalBoardController {
+public class LiberalBoardController extends Component {
     @FXML
     private ImageView boardImage;
 
@@ -46,21 +49,13 @@ public class LiberalBoardController {
     private int circesCount;
     private int lastCircleActivated;
 
-    @FXML
-    void buttonPress(ActionEvent event) {
-        this.showCard(this.index);
-        this.index++;
-    }
-
-    @FXML
-    void circlePress(ActionEvent event) {
-        this.moveVotingCircle(this.circleIndex);
-        this.circleIndex = (this.circleIndex + 1) % this.circesCount;
+    public LiberalBoardController(Pane surface) {
+        super(new PaneParentUpdater(surface));
+        super.initialize(App.class.getResource("fxml/liberalBoard.fxml"), surface);
     }
 
     @FXML
     public void initialize() {
-        System.out.println("Liberal Initialized");
         Image image = new Image(App.class.getResourceAsStream("images/liberalsCardsBoard.png"));
         this.boardImage.setImage(image);
 
@@ -77,6 +72,18 @@ public class LiberalBoardController {
         }
 
         this.cardImage = new Image(App.class.getResourceAsStream("images/liberalCard.png"));
+    }
+
+    @FXML
+    void buttonPress(ActionEvent event) {
+        this.showCard(this.index);
+        this.index++;
+    }
+
+    @FXML
+    void circlePress(ActionEvent event) {
+        this.moveVotingCircle(this.circleIndex);
+        this.circleIndex = (this.circleIndex + 1) % this.circesCount;
     }
 
     public void showNextCard() {

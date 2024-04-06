@@ -10,9 +10,8 @@ import javafx.scene.layout.VBox;
 import model.Observers.ActObservers;
 import model.Observers.ActionObserver;
 import model.Observers.ObserversAccess;
-import test_ui.PopupLayerManager;
 
-public class VoteResultController extends PopupLayerManager.PopupComponent {
+public class VoteResultController{
 
     @FXML
     private Label textVoteResult;
@@ -23,10 +22,10 @@ public class VoteResultController extends PopupLayerManager.PopupComponent {
 
     @FXML
     private VBox yesNamesHolder;
-
     @FXML
     private VBox noNamesHolder;
 
+    @FXML
     public void initialize() {
         this.continueButtonPressedObservers = new ActObservers<>();
         this.textVoteResult.setWrapText(true);

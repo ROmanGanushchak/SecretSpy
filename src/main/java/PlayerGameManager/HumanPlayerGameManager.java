@@ -2,10 +2,8 @@ package PlayerGameManager;
 
 import java.io.IOException;
 import java.util.ArrayList;
-
 import GameController.GameControllerVisualService;
 import javafx.fxml.FXMLLoader;
-import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.image.Image;
 import javafx.scene.layout.VBox;
@@ -18,7 +16,6 @@ import model.Game.PlayerModel;
 import model.Observers.ActionObserver;
 import model.Voting.Voting;
 import test_ui.App;
-import test_ui.Component;
 import test_ui.GameVisualization;
 import test_ui.Components.AbilityController;
 
@@ -33,7 +30,7 @@ public class HumanPlayerGameManager extends PlayerGameManager {
     public void initializeScreen() {
         try {
             System.out.println("Player initialize");
-            FXMLLoader sceneLoader = new FXMLLoader(App.class.getResource("gameVisualization.fxml"));
+            FXMLLoader sceneLoader = new FXMLLoader(App.class.getResource("fxml/gameVisualization.fxml"));
             this.scene = new Scene(sceneLoader.load());
             
             this.gameVisualization = sceneLoader.getController();
@@ -70,8 +67,7 @@ public class HumanPlayerGameManager extends PlayerGameManager {
 
         for (Right<President.rights> right : rights) {
             if (right.getValue() != 0) {
-                Parent rightVisual = Component.initialize(App.class.getResource("ability.fxml"), rightsHolder);
-                AbilityController rightController = (AbilityController) rightVisual.getProperties().get("controller");
+                AbilityController rightController = new AbilityController(rightsHolder);
                 rightController.setup(right.getKey().toString(), right.getValue(), right.getKey().ordinal());
                 rightController.getUseButtonObservers().subscribe(
                     new ActionObserver<>((Integer value) -> informRightPressed(value)));

@@ -5,12 +5,15 @@ import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.AnchorPane;
+import javafx.scene.layout.Pane;
 import javafx.scene.transform.Scale;
 import model.Observers.ActObservers;
 import model.Observers.ActionObserver;
 import model.Observers.ObserversAccess;
+import test_ui.App;
+import test_ui.PopupLayerManager;
 
-public class RevealeRoleController {
+public class RevealeRoleController extends PopupLayerManager.PopupComponent {
     @FXML
     private AnchorPane hidePane;
     @FXML
@@ -26,8 +29,9 @@ public class RevealeRoleController {
 
     private ActObservers<Integer> exitButtonObservers;
 
-    @FXML
-    private void initialize() {
+    public RevealeRoleController(Pane surface) {
+        super(surface);
+        super.initialize(App.class.getResource("fxml/revealRole.fxml"), surface);
         exitButtonObservers = new ActObservers<>();
     }
 
