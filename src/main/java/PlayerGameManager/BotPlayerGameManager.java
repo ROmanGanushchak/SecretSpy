@@ -4,20 +4,34 @@ import java.util.ArrayList;
 import java.util.Random;
 
 import GameController.GameControllerVisualService;
+import User.UserData;
 import model.ChangebleRole.President;
 import model.Cards.CardsArray;
 import model.ChangebleRole.Political.Right;
 import model.Voting.Voting;
 
-public class BotPlayerGameManager extends PlayerGameManager {
+public class BotPlayerGameManager implements PlayerGameManager {
     private GameControllerVisualService gameController;
     private Random rand = new Random();
 
-    public void voteForChancellor(Voting voting) {
-        voting.vote(this.getModelID(), true);
+    private UserData userData;
+    public UserData.VisualData getVisualData() {
+        return this.userData.visualData;
     }
 
-    public void voteForChancellor(Voting voting, String presidentName, String chancellorName) {
+    public int getPlayerID() {
+        return userData.getID();
+    }
+
+    public BotPlayerGameManager(int id) {
+        this.userData = new UserData(id, Integer.toString(id), "board.png");
+    }
+
+    public void voteForChancellor(Voting voting) {
+        voting.vote(this.getPlayerID(), true);
+    }
+
+    public void voteForChancellor(Voting voting, int presidentName, int chancellorName) {
         voteForChancellor(voting);
     }
 
@@ -54,6 +68,4 @@ public class BotPlayerGameManager extends PlayerGameManager {
     public void giveCardsToRemove(ArrayList<CardsArray.Card> cards) {
 
     }
-
-    public int getPlayerID() {return 0;}
 }

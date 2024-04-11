@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.image.Image?>
+<?import javafx.scene.image.ImageView?>
+<?import javafx.scene.layout.AnchorPane?>
+
+
+<AnchorPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="400.0" prefWidth="600.0" styleClass="kill-message" stylesheets="@../style.css" xmlns="http://javafx.com/javafx/13" xmlns:fx="http://javafx.com/fxml/1">
+   <children>
+      <Label alignment="CENTER" layoutX="14.0" layoutY="65.0" prefHeight="78.0" prefWidth="334.0" text="You got killed by a current president" />
+      <ImageView fitHeight="345.0" fitWidth="260.0" layoutX="334.0" layoutY="35.0" pickOnBounds="true" preserveRatio="true">
+         <image>
+            <Image url="@../images/revolver.png" />
+         </image>
+      </ImageView>
+      <ImageView fitHeight="63.0" fitWidth="61.0" layoutX="525.0" layoutY="35.0" onMousePressed="#exitButtonPressed" pickOnBounds="true" preserveRatio="true">
+         <image>
+            <Image url="@../images/exit-button.png" />
+         </image>
+      </ImageView>
+   </children>
+</AnchorPane>

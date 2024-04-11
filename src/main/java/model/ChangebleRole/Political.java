@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import model.Cards.CardsArray.Card;
 import model.Game.PlayerModel;
 import model.Observers.ActObservers;
+import model.Observers.ActObserversAccess;
 import model.Observers.ActionObserver;
 import model.Observers.ObserversAccess;
 
@@ -28,7 +29,7 @@ abstract class ChangebleRole {
         return this.player;
     }
 
-    public ObserversAccess<ActionObserver<Integer>> getPlayerChangesObservers() {
+    public ActObserversAccess<Integer> getPlayerChangesObservers() {
         return this.playerChanges;
     }
 }
@@ -96,15 +97,15 @@ public abstract class Political<R extends Enum<R>> extends ChangebleRole {
         return true;
     }
 
-    public ObserversAccess<ActionObserver<ArrayList<Card>>> getCardChoosedObserver() {
+    public ActObserversAccess<ArrayList<Card>> getCardChoosedObserver() {
         return this.cardChoosenObservers;
     }
 
-    public ObserversAccess<ActionObserver<ArrayList<Card>>> getCardAddingObserver() {
+    public ActObserversAccess<ArrayList<Card>> getCardAddingObserver() {
         return this.cardAddingObservers;
     }
 
-    public ObserversAccess<ActionObserver<R>> getPowerChangerObserver() {
+    public ActObserversAccess<R> getPowerChangerObserver() {
         return this.powerChangesObserver;
     }
 

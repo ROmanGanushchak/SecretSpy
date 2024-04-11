@@ -1,15 +1,13 @@
 package test_ui.Components;
 
 import java.util.ArrayList;
-
 import javafx.fxml.FXML;
 import javafx.geometry.Pos;
 import javafx.scene.control.Label;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.VBox;
 import model.Observers.ActObservers;
-import model.Observers.ActionObserver;
-import model.Observers.ObserversAccess;
+import model.Observers.ActObserversAccess;
 
 public class VoteResultController{
 
@@ -61,7 +59,7 @@ public class VoteResultController{
         this.continueButtonPressedObservers.informAll(0);
     }
 
-    public ObserversAccess<ActionObserver<Integer>> getContinueButtonObservers() {
+    public ActObserversAccess<Integer> getContinueButtonObservers() {
         return this.continueButtonPressedObservers;
     }
 }

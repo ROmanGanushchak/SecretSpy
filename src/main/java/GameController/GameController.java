@@ -2,14 +2,15 @@ package GameController;
 
 import java.lang.reflect.Proxy;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.Scanner;
-
 import PlayerGameManager.*;
+import User.UserData;
 import model.Cards.CardsArray.Card;
 import model.ChangebleRole.Chancellor;
 import model.ChangebleRole.President;
-import model.ChangebleRole.Political.Right;
 import model.ChangebleRole.President.rights;
 import model.Game.Game;
 import model.Observers.ActionObserver;
@@ -63,42 +64,37 @@ public class GameController implements GameControllerModuleService, GameControll
 
         ArrayList<PlayerGameManager> players = new ArrayList<>(humanPlayers.size()+botsCount);
         players.addAll(humanPlayers);
-        for (int i=0; i<botsCount; i++) {
-            players.add(new BotPlayerGameManager());
+        for (int i=humanPlayers.size(); i<botsCount+humanPlayers.size(); i++) {
+            players.add(new BotPlayerGameManager(i));
         }
 
         this.gameModel = new Game(players.size(), moduleProxy, 17, -1);
         
         this.gameModel.getPresident().getCardAddingObserver().subscribe(
-            new ActionObserver<ArrayList<Card>>(( 
-                ArrayList<Card> cards) -> this.players.get(currentPresident).giveCardsToRemove(cards)));
+            (ArrayList<Card> cards) -> this.players.get(currentPresident).giveCardsToRemove(cards));
         
-        this.gameModel.getChancellor().getCardAddingObserver().subscribe(
-            new ActionObserver<ArrayList<Card>>((ArrayList<Card> cards) -> this.getCards(cards)));
+        this.gameModel.getChancellor().getCardAddingObserver().subscribe((ArrayList<Card> cards) -> this.getCards(cards));
+        this.gameModel.getPresident().getPlayerChangesObservers().subscribe((Integer player) -> makePresident(player));
         
-        this.gameModel.getPresident().getPlayerChangesObservers().subscribe(
-            new ActionObserver<Integer>((Integer player) -> makePresident(player))
-        );
-        
-        Integer ids[] = this.gameModel.getPlayersIds();
-        for (int i=0; i<ids.length; i++) {
-            players.get(i).setModelID(ids[i]);
-            players.get(i).setName(Integer.toString(i));
-        }
+        int ids[] = this.gameModel.getPlayersIds();
 
         this.players = players;
         this.humanPlayers = humanPlayers;
 
+        Map<Integer, UserData.VisualData> visualData = new HashMap<>();
+        for (PlayerGameManager player : players) 
+            visualData.put(player.getPlayerID(), player.getVisualData());
+
         for (HumanPlayerGameManager player : humanPlayers) {
-            player.initializeGame();
             player.setProxyGameController(this.visualProxy);
-            this.gameModel.getCardAddingToBoardObservers().subscribe(
-                new ActionObserver<Card>(((Card card) -> player.addCardToBoard(card.state))) );
+            this.gameModel.getCardAddingToBoardObservers().subscribe(((Card card) -> player.addCardToBoard(card.state)));
             
-            this.gameModel.getFailedElectionObservers().subscribe(
-                new ActionObserver<Integer>((Integer failed) -> player.changeFailedVotingCount(failed)) );
+            this.gameModel.getFailedElectionObservers().subscribe((Integer failed) -> player.changeFailedVotingCount(failed));
             
-            player.showRole(this.gameModel.getRole(player.getModelID()));
+            player.showRole(this.gameModel.getRole(player.getPlayerID()));
+            player.setPlayersVisuals(visualData);
+
+            player.initializeGame();
         }
 
         makePresident(this.gameModel.getPresident().getPlayer().getId());
@@ -112,24 +108,14 @@ public class GameController implements GameControllerModuleService, GameControll
         );
 
         for (PlayerGameManager player : this.players) {
-            if (voting.isInGroup(player.getModelID()))
-                player.voteForChancellor(voting, this.players.get(presidentId).getName(), this.players.get(chancellorId).getName());
+            if (voting.isInGroup(player.getPlayerID()))
+                player.voteForChancellor(voting, presidentId, chancellorId);
         }
     }
 
     private void showVotingResults(boolean result, int candidateId, Map<Integer, Boolean> votes) {
-        ArrayList<String> yesNames = new ArrayList<>();
-        ArrayList<String> noNames = new ArrayList<>();
-
-        for (Map.Entry<Integer, Boolean> entry : votes.entrySet()) {
-            if (entry.getValue()) 
-                yesNames.add(this.players.get(entry.getKey()).getName());
-            else 
-                noNames.add(this.players.get(entry.getKey()).getName());
-        }
-
         for (HumanPlayerGameManager player : this.humanPlayers) {
-            player.showVoteResult(result, this.players.get(candidateId).getName(), yesNames, noNames);
+            player.showVotingResult(result, candidateId, votes);
         }
     }
 
@@ -154,11 +140,11 @@ public class GameController implements GameControllerModuleService, GameControll
                 break;
             case "chooseChancellor":
                 num = scanner.nextInt();
-                this.gameModel.getPresident().suggestingChancellor(players.get(num).getModelID());
+                this.gameModel.getPresident().suggestingChancellor(players.get(num).getPlayerID());
                 break;
             case "setNextPres":
                 num = scanner.nextInt();
-                this.gameModel.getPresident().choosingNextPresident(players.get(num).getModelID());
+                this.gameModel.getPresident().choosingNextPresident(players.get(num).getPlayerID());
                 break;
             case "activeNextPres":
                 this.gameModel.getPresident().expandPower(rights.ChoosingNextPresident, 1);
@@ -187,6 +173,25 @@ public class GameController implements GameControllerModuleService, GameControll
             case "ChoosePresCard":
                 num = scanner.nextInt();
                 System.out.println(this.gameModel.getPresident().chooseCardToRemove(this.cards.get(num)));
+                break;
+            
+            case "AddLiberalCardOnScreen":
+                humanPlayers.get(0).addCardToBoard(Card.states.Liberal);
+                break;
+            
+            case "AddSpyCardOnScreen":
+                humanPlayers.get(0).addCardToBoard(Card.states.Spy);
+                break;
+            
+            case "RealeCardsShow":
+                Card card1 = new Card(); Card card2 = new Card(); Card card3 = new Card();
+                card1.state = Card.states.Liberal; card2.state = Card.states.Liberal; card3.state = Card.states.Liberal;
+                ArrayList<Card> cards1 = new ArrayList<>(Arrays.asList(card1, card2, card3));
+                humanPlayers.get(0).revealCards(cards1);
+                break;
+            
+            case "ShowPlayerKilling":
+                humanPlayers.get(0).showDeathMessge();
                 break;
         }
     }

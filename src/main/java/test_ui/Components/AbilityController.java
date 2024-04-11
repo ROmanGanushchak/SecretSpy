@@ -15,8 +15,7 @@ import javafx.scene.layout.VBox;
 import javafx.scene.shape.Circle;
 import javafx.util.Duration;
 import model.Observers.ActObservers;
-import model.Observers.ActionObserver;
-import model.Observers.ObserversAccess;
+import model.Observers.ActObserversAccess;
 import test_ui.App;
 import test_ui.Components.Component.Component;
 import test_ui.Components.Component.ParentUpdaters.VBoxParentUpdater;
@@ -173,7 +172,7 @@ public class AbilityController extends Component {
         useButtonObservers.informAll(value);
     }
 
-    public ObserversAccess<ActionObserver<Integer>> getUseButtonObservers() {
+    public ActObserversAccess<Integer> getUseButtonObservers() {
         return this.useButtonObservers;
     }
 }

@@ -2,7 +2,6 @@ package test_ui;
 
 import java.util.LinkedList;
 import java.util.Queue;
-
 import javafx.scene.Parent;
 import javafx.scene.layout.Pane;
 import test_ui.Components.Component.Component;

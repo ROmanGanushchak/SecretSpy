@@ -6,7 +6,7 @@ import model.ChangebleRole.*;
 import model.Observers.ActObservers;
 import model.Observers.ActionObserver;
 import model.Observers.ObserversAccess;
-import model.Observers.ActionObserver.MethodToCall;
+import model.Observers.ActObservers.MethodToCall;
 import model.Voting.VoteObserver;
 import model.Voting.Voting;
 
@@ -79,11 +79,11 @@ public class Game implements GamePresidentAccess {
         this.president.change(players.get(0));
         
         MethodToCall<ArrayList<Card>> method = (ArrayList<Card> cards) -> this.resultPresidentChoosingCards(cards);
-        this.president.getCardChoosedObserver().subscribe(new ActionObserver<ArrayList<Card>>(method));
+        this.president.getCardChoosedObserver().subscribe(method);
 
         this.chancellor = new Chancellor();
         method = (ArrayList<Card> cards) -> this.resultChancllerChoosingCards(cards);
-        this.chancellor.getCardChoosedObserver().subscribe(new ActionObserver<ArrayList<Card>>(method));
+        this.chancellor.getCardChoosedObserver().subscribe(method);
 
         // observers
         this.cardAddingToBoardObservers = new ActObservers<>();
@@ -303,8 +303,8 @@ public class Game implements GamePresidentAccess {
         return this.chancellor;
     }
 
-    public Integer[] getPlayersIds() {
-        Integer array[] = new Integer[this.players.size()];
+    public int[] getPlayersIds() {
+        int array[] = new int[this.players.size()];
         for (int i=0; i<this.players.size(); i++) {
             array[i] = this.players.get(i).getId();
         }
@@ -320,11 +320,11 @@ public class Game implements GamePresidentAccess {
         return new PlayerModel[]{this.lastChancellor, this.lastPresident};
     }
 
-    public ObserversAccess<ActionObserver<Card>> getCardAddingToBoardObservers() {
+    public ActObservers<Card> getCardAddingToBoardObservers() {
         return this.cardAddingToBoardObservers;
     }
 
-    public ObserversAccess<ActionObserver<Integer>> getFailedElectionObservers() {
+    public ActObservers<Integer> getFailedElectionObservers() {
         return this.failedElectionObservers;
     }
 }

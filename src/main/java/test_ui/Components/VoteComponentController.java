@@ -5,8 +5,7 @@ import javafx.scene.control.Label;
 import javafx.scene.image.ImageView;
 import javafx.scene.input.MouseEvent;
 import model.Observers.ActObservers;
-import model.Observers.ActionObserver;
-import model.Observers.ObserversAccess;
+import model.Observers.ActObserversAccess;
 
 public class VoteComponentController {
     @FXML
@@ -47,7 +46,7 @@ public class VoteComponentController {
         this.voteResultObserves.informAll(false);
     }
 
-    public ObserversAccess<ActionObserver<Boolean>> getVoteResultObservers() {
+    public ActObserversAccess<Boolean> getVoteResultObservers() {
         return this.voteResultObserves;
     }
 }

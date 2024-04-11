@@ -15,6 +15,7 @@ import test_ui.Components.Component.ParentUpdaters.ParentUpdater;
 public class Component {
     private Parent component;
     private ParentUpdater<?> parentUpdater;
+    private Scale scale;
 
     public Component(ParentUpdater<?> parentUpdater) {
         this.parentUpdater = parentUpdater;
@@ -23,7 +24,6 @@ public class Component {
     protected Parent load(URL fxml) {
         FXMLLoader loader = new FXMLLoader(fxml);
         loader.setController(this);
-        System.out.println(loader + "ffff");
 
         try {
             return loader.load();
@@ -35,14 +35,14 @@ public class Component {
 
     protected Parent initialize(URL fxml, double width, double height) {
         setComponent(this.load(fxml));
-        Component.resize(component, width, height);
+        this.scale = Component.resize(component, width, height);
 
         return component;
     }
 
     protected Parent initialize(URL fxml, Pane surface) {
         setComponent(this.load(fxml));
-        component.getProperties().put("scale", resize(component, surface.getPrefWidth(), surface.getPrefHeight()));
+        this.scale = resize(component, surface.getPrefWidth(), surface.getPrefHeight());
         surface.getChildren().add(component);
 
         return component;
@@ -50,7 +50,7 @@ public class Component {
 
     protected Parent initialize(URL fxml, VBox box) {
         setComponent(this.load(fxml));
-        resizeToFitIn(component, box);
+        this.scale = resizeToFitIn(component, box);
         box.getChildren().add(component);
 
         return component;
@@ -64,13 +64,16 @@ public class Component {
         return this.component;
     }
 
+    public Scale getScale() {
+        return this.scale;
+    }
+
     public void hide() {
         parentUpdater.hide();
         Component.hide(this.component);
     }
 
     public void reveal() {
-        System.out.println("Component revealed");
         parentUpdater.reveal();
         Component.reveal(this.component);
     }

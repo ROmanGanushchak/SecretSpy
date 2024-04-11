@@ -73,21 +73,80 @@
     -fx-text-fill: #3a393a;
 }
 
+.playres-icon-surface {
+    -fx-background-color: #EAF3EB;
+}
+
+.playres-icon-surface .main-text {
+    -fx-text-alignment: center;
+    -fx-text-fill: #4c5352;
+    -fx-font-size: 30;
+}
+
+.playres-icon-surface .scroll-pane {
+    -fx-background-color: transparent;
+}
+
+.playres-icon-surface .scroll-pane .viewport {
+    -fx-background-color: transparent;
+}
+
+.playres-icon-surface .scroll-pane > .scroll-bar:vertical {
+    -fx-pref-width: 6px;
+}
+
 .player-field {
     -fx-border-radius: 20;
-    -fx-background-radius: 25;
+    -fx-background-radius: 20;
 
-    /* -fx-background-color: #d6bfaf; */
-    /* -fx-background-color: linear-gradient(from 0% 0% to 100% 0%, stop 0 red, stop 1 blue); */
+    -fx-border-width: 2;
+    -fx-border-color: #b2a2a2;
 
-    -fx-border-width: 3;
-    -fx-border-color: #d6c6ae;
+
+    -fx-background-color: linear-gradient(to left bottom, #EAF3EB, #ebe3be); /*#c0fbff, #f8aaff*/
 }
 
-.player-field .right-up-pane {
-    /* -fx-background-color: #c23e1d; */
+.player-field .icon {
+    -fx-background-radius: 40;
+    -fx-background-size: cover;
+    -fx-background-repeat: no-repeat;
+    -fx-background-position: center;
 }
 
-.player-field .right-down-pane {
-    /* -fx-background-color: #1d20c2; */
+.player-field .role-icon {
+    -fx-border-width: 1;
+    -fx-border-color: #c2b2b2;
+    -fx-fill: #EAF3EB;
+}
+
+.reveal-cards .label {
+    -fx-font-size: 25;
+    -fx-fill: #534343; 
+    -fx-font-style: italic;
+}
+
+
+.kill-message .label {
+    -fx-font-size: 19;
+    -fx-text-fill: #983535; 
+    -fx-font-style: italic;
+    -fx-font-weight: bold;
+}
+
+.end-game .label {
+    -fx-font-size: 25;
+    -fx-text-fill: #534343;
+    -fx-font-style: italic;
+}
+
+.end-game .role-text {
+    -fx-font-size: 20;
+    -fx-text-fill: #434343;
+    -fx-font-style: italic;
+}
+
+.end-game .names-text {
+    -fx-font-size: 18;
+    -fx-text-fill: #c22f2f;
+    -fx-font-style: default;
 }

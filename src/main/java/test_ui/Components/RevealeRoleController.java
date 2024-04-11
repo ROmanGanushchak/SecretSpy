@@ -6,10 +6,8 @@ import javafx.scene.image.ImageView;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.Pane;
-import javafx.scene.transform.Scale;
 import model.Observers.ActObservers;
-import model.Observers.ActionObserver;
-import model.Observers.ObserversAccess;
+import model.Observers.ActObserversAccess;
 import test_ui.App;
 import test_ui.PopupLayerManager;
 
@@ -20,8 +18,6 @@ public class RevealeRoleController extends PopupLayerManager.PopupComponent {
     private ImageView roleImage;
     @FXML
     private AnchorPane roleImagePlane;
-
-    private Scale surfaceScale;
 
     private double initialOffSetY;
     private double startingPosition;
@@ -37,12 +33,12 @@ public class RevealeRoleController extends PopupLayerManager.PopupComponent {
 
     @FXML
     private void mouseMove(MouseEvent event) {
-        this.hidePane.setLayoutY(Math.min(Math.max(event.getSceneY() / surfaceScale.getY() + initialOffSetY, minLayoutY), startingPosition));
+        this.hidePane.setLayoutY(Math.min(Math.max(event.getSceneY() / super.getScale().getY() + initialOffSetY, minLayoutY), startingPosition));
     }
 
     @FXML
     private void mousePress(MouseEvent event) {
-        this.initialOffSetY = hidePane.getLayoutY() - event.getSceneY() / surfaceScale.getY();
+        this.initialOffSetY = hidePane.getLayoutY() - event.getSceneY() / super.getScale().getY();
         startingPosition = hidePane.getLayoutY();
         minLayoutY = hidePane.getLayoutY() - hidePane.getHeight();
     }
@@ -57,12 +53,11 @@ public class RevealeRoleController extends PopupLayerManager.PopupComponent {
         exitButtonObservers.informAll(null);
     }
 
-    public ObserversAccess<ActionObserver<Integer>> getExitObservers() {
+    public ActObserversAccess<Integer> getExitObservers() {
         return exitButtonObservers;
     }
 
-    public void setup(Image roleImage, Scale surfaceScale) {
+    public void setup(Image roleImage) {
         this.roleImage.setImage(roleImage);
-        this.surfaceScale = surfaceScale;
     }
 }

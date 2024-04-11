@@ -4,7 +4,7 @@
 <?import javafx.scene.layout.AnchorPane?>
 <?import javafx.scene.shape.Circle?>
 
-<AnchorPane onMouseEntered="#mouseOnComponent" onMouseExited="#mouseOutCopmonent" prefHeight="72.0" prefWidth="286.0" styleClass="ability" stylesheets="@../style.css" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1">
+<AnchorPane onMouseEntered="#mouseOnComponent" onMouseExited="#mouseOutCopmonent" prefHeight="72.0" prefWidth="286.0" styleClass="ability" stylesheets="@../style.css" xmlns="http://javafx.com/javafx/13" xmlns:fx="http://javafx.com/fxml/1">
    <children>
       <AnchorPane fx:id="circleEndPoint" layoutX="209.0" layoutY="7.0" prefHeight="12.0" prefWidth="10.0" />
       <AnchorPane fx:id="textEndPoint" layoutX="7.0" layoutY="7.0" prefHeight="9.0" prefWidth="8.0" />

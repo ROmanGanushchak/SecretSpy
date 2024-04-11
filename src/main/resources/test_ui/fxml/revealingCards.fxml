@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.image.Image?>
+<?import javafx.scene.image.ImageView?>
+<?import javafx.scene.layout.AnchorPane?>
+
+
+<AnchorPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="400.0" prefWidth="600.0" styleClass="reveal-cards" stylesheets="@../style.css" xmlns="http://javafx.com/javafx/13" xmlns:fx="http://javafx.com/fxml/1">
+   <children>
+      <ImageView fx:id="cardSlote1" fitHeight="192.0" fitWidth="140.0" layoutX="43.0" layoutY="104.0" pickOnBounds="true" preserveRatio="true" />
+      <ImageView fx:id="cardSlote2" fitHeight="192.0" fitWidth="140.0" layoutX="230.0" layoutY="104.0" pickOnBounds="true" preserveRatio="true" />
+      <ImageView fx:id="cardSlote3" fitHeight="192.0" fitWidth="140.0" layoutX="415.0" layoutY="104.0" pickOnBounds="true" preserveRatio="true" />
+      <Label alignment="CENTER" layoutX="87.0" layoutY="29.0" prefHeight="58.0" prefWidth="407.0" styleClass="reveal-cards" text="The next tree cards in the deck" />
+      <ImageView fitHeight="90.0" fitWidth="90.0" layoutX="499.0" layoutY="12.0" onMousePressed="#exitPressed" pickOnBounds="true" preserveRatio="true">
+         <image>
+            <Image url="@../images/exit-button.png" />
+         </image>
+      </ImageView>
+   </children>
+</AnchorPane>

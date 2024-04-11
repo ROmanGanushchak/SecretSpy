@@ -6,8 +6,7 @@ import javafx.animation.TranslateTransition;
 import javafx.scene.Parent;
 import javafx.scene.layout.AnchorPane;
 import javafx.util.Duration;
-import model.Observers.ActionObserver;
-import model.Observers.ObserversAccess;
+import model.Observers.ActObserversAccess;
 import test_ui.Components.VoteComponentController;
 import test_ui.Components.VoteResultController;
 import test_ui.Components.Component.Component;
@@ -37,8 +36,7 @@ public class VoteManeger extends PopupLayerManager.PopupComponent {
         this.voteResultController = (VoteResultController) this.voteResult.getProperties().get("controller");
         this.voteResultController.initialize();
 
-        this.voteResultController.getContinueButtonObservers().subscribe(
-            new ActionObserver<>((Integer num) -> end()) );
+        this.voteResultController.getContinueButtonObservers().subscribe((Integer num) -> end());
 
         AnchorPane.clearConstraints(voteSurface);
         Component.hide(this.voteSurface);
@@ -91,7 +89,7 @@ public class VoteManeger extends PopupLayerManager.PopupComponent {
         animation.play();
     }
 
-    public ObserversAccess<ActionObserver<Boolean>> getVotingResultObservers() {
+    public ActObserversAccess<Boolean> getVotingResultObservers() {
         return this.voteController.getVoteResultObservers();
     }
 
@@ -103,7 +101,7 @@ public class VoteManeger extends PopupLayerManager.PopupComponent {
         this.voteController.setChancellorName(name);
     }
 
-    public ObserversAccess<ActionObserver<Integer>> getEndObservers() {
+    public ActObserversAccess<Integer> getEndObservers() {
         return this.voteResultController.getContinueButtonObservers();
     }
 }

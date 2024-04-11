@@ -2,38 +2,48 @@ package PlayerGameManager;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Map;
+
 import GameController.GameControllerVisualService;
+import User.UserData;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Scene;
-import javafx.scene.image.Image;
 import javafx.scene.layout.VBox;
 import model.Cards.CardsArray;
-import model.Cards.CardsArray.Card;
 import model.ChangebleRole.Political.Right;
 import model.ChangebleRole.Political;
 import model.ChangebleRole.President;
-import model.Game.PlayerModel;
-import model.Observers.ActionObserver;
 import model.Voting.Voting;
 import test_ui.App;
 import test_ui.GameVisualization;
 import test_ui.Components.AbilityController;
+import test_ui.Components.PlayerPaneController;
 
-public class HumanPlayerGameManager extends PlayerGameManager {
+public class HumanPlayerGameManager extends GameVisualization implements PlayerGameManager {
     private GameControllerVisualService gameController;
 
-    private GameVisualization gameVisualization;
+    private UserData userData;
+    public UserData.VisualData getVisualData() {
+        return this.userData.visualData;
+    }
+
+    public int getPlayerID() {
+        return userData.getID();
+    }
+
     private Scene scene;
 
     private Voting currentVoting;
 
+    public HumanPlayerGameManager(int id) {
+        this.userData = new UserData(id, "Player " + Integer.toString(id), "board.png");
+    }
+
     public void initializeScreen() {
         try {
-            System.out.println("Player initialize");
             FXMLLoader sceneLoader = new FXMLLoader(App.class.getResource("fxml/gameVisualization.fxml"));
+            sceneLoader.setController(this);
             this.scene = new Scene(sceneLoader.load());
-            
-            this.gameVisualization = sceneLoader.getController();
         } catch(IOException e) {
             System.out.println("Catch");
             System.out.println(e.getMessage());
@@ -41,20 +51,20 @@ public class HumanPlayerGameManager extends PlayerGameManager {
 
         // remove when add multiple screens
         this.scene.widthProperty().addListener((observable, oldValue, newValue) -> {
-            this.gameVisualization.resizeMainMuneX(oldValue, newValue);
+            super.resizeMainMuneX(oldValue, newValue);
         });
 
         this.scene.heightProperty().addListener((observable, oldValue, newValue) -> {
-            this.gameVisualization.resizeMainMuneY(oldValue, newValue);
+            super.resizeMainMuneY(oldValue, newValue);
         });
     }
 
     public void initializeGame() {
         this.currentVoting = null;
 
-        this.gameVisualization.getVotingResultObservers().subscribe(
-            new ActionObserver<>((Boolean result) -> this.vote(result))
-        );
+        super.getVotingResultObservers().subscribe((Boolean result) -> this.vote(result));
+
+        // super.addCardToBoard(Card.states.Liberal);
     }
 
     public void informRightPressed(Integer value) {
@@ -62,58 +72,38 @@ public class HumanPlayerGameManager extends PlayerGameManager {
     }
 
     public void makePresident(Political.Right<President.rights> rights[]) {
-        System.out.println("Make president");
-        VBox rightsHolder = gameVisualization.getRightsHolder();
+        VBox rightsHolder = super.getRightsHolder();
 
         for (Right<President.rights> right : rights) {
             if (right.getValue() != 0) {
                 AbilityController rightController = new AbilityController(rightsHolder);
                 rightController.setup(right.getKey().toString(), right.getValue(), right.getKey().ordinal());
-                rightController.getUseButtonObservers().subscribe(
-                    new ActionObserver<>((Integer value) -> informRightPressed(value)));
+                rightController.getUseButtonObservers().subscribe((Integer value) -> informRightPressed(value));
             }
         }
     }
 
-    public void unmakePresident() {
-        System.out.println("not president");
-        VBox rightsHolder = gameVisualization.getRightsHolder();
-        rightsHolder.getChildren().clear();
+    @Override
+    public void setPlayersVisuals(Map<Integer, UserData.VisualData> playersVisualData) {
+        super.setPlayersVisuals(playersVisualData);
+        Map<Integer, PlayerPaneController> icons = super.getPlayerIcons();
+        for (Map.Entry<Integer, PlayerPaneController> icon : icons.entrySet()) {
+            icon.getValue().getChooseButObservers().subscribe((Integer val) -> System.out.println("Player chosen " + val));
+        }
     }
-    
-    public void showRole(PlayerModel.mainRoles role) {
-        Image cardImage;
-        if (role == PlayerModel.mainRoles.Liberal)
-            cardImage = new Image(App.class.getResourceAsStream("images/liberalRoleCard.png"));
-        else if (role == PlayerModel.mainRoles.Spy)
-            cardImage = new Image(App.class.getResourceAsStream("images/spyRoleCard.png"));
-        else if (role == PlayerModel.mainRoles.ShadowLeader)
-            cardImage = new Image(App.class.getResourceAsStream("images/shadowLeader.png"));
-        else 
-            cardImage = new Image(App.class.getResourceAsStream("images/continue-circle.png"));
-        
-        this.gameVisualization.revealingRoleCardAnimation(cardImage);
+
+    public void unmakePresident() {
+        VBox rightsHolder = super.getRightsHolder();
+        rightsHolder.getChildren().clear();
     }
 
     public void giveCardsToRemove(ArrayList<CardsArray.Card> cards) {
-        this.gameVisualization.getCardRemovalChooseObservers().subscribe(
-            new ActionObserver<>((Integer i) -> System.out.println("card was chosn " + i)));;
-        this.gameVisualization.showCardsToRemove(cards);
+        super.getCardRemovalChooseObservers().subscribe((Integer i) -> System.out.println("card was chosn " + i));
+        super.showCardsToRemove(cards);
     }
 
     public void choosePlayer(String text) {
 
-    }
-
-    public void changeFailedVotingCount(int failedCount) {
-        this.gameVisualization.getLiberalBoardController().moveVotingCircle(failedCount);
-    }
-
-    public void addCardToBoard(Card.states type) {
-        if (type == Card.states.Liberal) 
-            this.gameVisualization.getLiberalBoardController().showNextCard();
-        else if (type == Card.states.Spy)
-            this.gameVisualization.getSpyBoardController().showNextCard();
     }
 
     private void vote(Boolean result) {
@@ -123,30 +113,23 @@ public class HumanPlayerGameManager extends PlayerGameManager {
         }
     }
 
-    public void voteForChancellor(Voting voting, String presidentName, String chancellorName) {
-        System.out.println("Vote for chancellor in player");
+    public void voteForChancellor(Voting voting, int presidentID, int chancellorID) {
         if (this.currentVoting != null) 
             System.out.println("Trying to add voting while other didnt ended");
         this.currentVoting = voting;
-        this.gameVisualization.startVoting(presidentName, chancellorName);
+        super.startVoting(presidentID, chancellorID);
     }
 
     public void voteForChancellor(Voting voting) {
-        this.voteForChancellor(voting, "President", "Chancellor");
-    }
-
-    public void showVoteResult(boolean result, String candidateName, ArrayList<String> yesVotes, ArrayList<String> noVotes) {
-        this.gameVisualization.showVotingResult(result, candidateName, yesVotes, noVotes);
+        this.voteForChancellor(voting, -1, -1);
     }
 
     public void setProxyGameController(GameControllerVisualService gameController) {
         this.gameController = gameController;
-        this.gameVisualization.setGameContrlProxy(gameController);
+        super.setGameContrlProxy(gameController);
     }
 
     public Scene getScene() {
         return this.scene;
     }
-
-    public int getPlayerID() {return 0;}
 }

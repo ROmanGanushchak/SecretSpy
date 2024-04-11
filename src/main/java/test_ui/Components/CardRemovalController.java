@@ -13,8 +13,7 @@ import javafx.scene.layout.Pane;
 import javafx.util.Duration;
 import model.Cards.CardsArray;
 import model.Observers.ActObservers;
-import model.Observers.ActionObserver;
-import model.Observers.ObserversAccess;
+import model.Observers.ActObserversAccess;
 import test_ui.App;
 import test_ui.PopupLayerManager;
 import test_ui.Components.Component.Component;
@@ -126,7 +125,7 @@ public class CardRemovalController extends PopupLayerManager.PopupComponent {
         this.cardSlotePressed.informAll((Integer) index / 2);
     }
 
-    public ObserversAccess<ActionObserver<Integer>> getCardSlotePressed() {
+    public ActObserversAccess<Integer> getCardSlotePressed() {
         return this.cardSlotePressed;
     }
 }

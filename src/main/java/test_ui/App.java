@@ -14,7 +14,7 @@ public class App extends Application {
 
     @Override
     public void start(Stage stage) throws IOException {
-        HumanPlayerGameManager player = new HumanPlayerGameManager();
+        HumanPlayerGameManager player = new HumanPlayerGameManager(0);
         player.initializeScreen();
         this.player = player;
 
