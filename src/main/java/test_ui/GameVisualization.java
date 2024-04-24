@@ -229,10 +229,6 @@ public class GameVisualization { // game visualization має компонент
         this.voteManeger.end();
     }
 
-    public ActObserversAccess<Boolean> getVotingResultObservers() {
-        return this.voteManeger.getVotingResultObservers();
-    }
-
     public void showVotingResult(boolean result, int candidateID, Map<Integer, Boolean> votes) {
         ArrayList<String> yesVoteNames = new ArrayList<>(), noVoteNames = new ArrayList<>();
 
@@ -360,6 +356,10 @@ public class GameVisualization { // game visualization має компонент
 
     public Map<Integer, PlayerPaneController> getPlayerIcons() {
         return this.playersIcons;
+    }
+
+    public ActObserversAccess<Boolean> getVotingResultObservers() {
+        return this.voteManeger.getVotingResultObservers();
     }
 }
 

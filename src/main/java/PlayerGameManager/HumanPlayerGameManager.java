@@ -10,7 +10,8 @@ import javafx.fxml.FXMLLoader;
 import javafx.scene.Scene;
 import javafx.scene.layout.VBox;
 import model.Cards.CardsArray;
-import model.ChangebleRole.Political.Right;
+import model.ChangebleRole.Political.SimpleRight;
+import model.ChangebleRole.Chancellor;
 import model.ChangebleRole.Political;
 import model.ChangebleRole.President;
 import model.Voting.Voting;
@@ -71,16 +72,50 @@ public class HumanPlayerGameManager extends GameVisualization implements PlayerG
         System.out.println("type -> " + value);
     }
 
-    public void makePresident(Political.Right<President.rights> rights[]) {
+    public void makePresident(Political.SimpleRight<President.RightTypes> rights[]) {
         VBox rightsHolder = super.getRightsHolder();
 
-        for (Right<President.rights> right : rights) {
+        for (SimpleRight<President.RightTypes> right : rights) {
             if (right.getValue() != 0) {
                 AbilityController rightController = new AbilityController(rightsHolder);
                 rightController.setup(right.getKey().toString(), right.getValue(), right.getKey().ordinal());
                 rightController.getUseButtonObservers().subscribe((Integer value) -> informRightPressed(value));
             }
         }
+    }
+
+    public void unmakePresident() {
+        VBox rightsHolder = super.getRightsHolder();
+        rightsHolder.getChildren().clear();
+    }
+
+    public void changePresident(Integer oldPresident, Integer newPresident) {
+        if (oldPresident != null)
+            super.setIconPlayerPane(PlayerPaneController.Icons.NONE, oldPresident);
+        super.setIconPlayerPane(PlayerPaneController.Icons.PRESIDENT, newPresident);
+    }
+
+    public void makeChancellor(SimpleRight<Chancellor.rights> rights[]) {
+        VBox rightsHolder = super.getRightsHolder();
+
+        for (SimpleRight<Chancellor.rights> right : rights) {
+            if (right.getValue() != 0) {
+                AbilityController rightController = new AbilityController(rightsHolder);
+                rightController.setup(right.getKey().toString(), right.getValue(), right.getKey().ordinal());
+                rightController.getUseButtonObservers().subscribe((Integer value) -> informRightPressed(value));
+            }
+        }
+    }
+
+    public void unmakeChancellor() {
+        VBox rightsHolder = super.getRightsHolder();
+        rightsHolder.getChildren().clear();
+    }
+
+    public void changeChancellor(Integer oldChancellor, Integer newChancellor) {
+        if (oldChancellor != null)
+            super.setIconPlayerPane(PlayerPaneController.Icons.NONE, oldChancellor);
+        super.setIconPlayerPane(PlayerPaneController.Icons.CHANCELLOR, newChancellor);
     }
 
     @Override
@@ -90,11 +125,6 @@ public class HumanPlayerGameManager extends GameVisualization implements PlayerG
         for (Map.Entry<Integer, PlayerPaneController> icon : icons.entrySet()) {
             icon.getValue().getChooseButObservers().subscribe((Integer val) -> System.out.println("Player chosen " + val));
         }
-    }
-
-    public void unmakePresident() {
-        VBox rightsHolder = super.getRightsHolder();
-        rightsHolder.getChildren().clear();
     }
 
     public void giveCardsToRemove(ArrayList<CardsArray.Card> cards) {

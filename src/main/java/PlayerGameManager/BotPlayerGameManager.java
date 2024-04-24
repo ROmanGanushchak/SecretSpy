@@ -7,7 +7,8 @@ import GameController.GameControllerVisualService;
 import User.UserData;
 import model.ChangebleRole.President;
 import model.Cards.CardsArray;
-import model.ChangebleRole.Political.Right;
+import model.ChangebleRole.Chancellor;
+import model.ChangebleRole.Political.SimpleRight;
 import model.Voting.Voting;
 
 public class BotPlayerGameManager implements PlayerGameManager {
@@ -35,7 +36,7 @@ public class BotPlayerGameManager implements PlayerGameManager {
         voteForChancellor(voting);
     }
 
-    public void makePresident(Right<President.rights> rights[]) {
+    public void makePresident(SimpleRight<President.RightTypes> rights[]) {
         // int startIndex = rand.nextInt(rights.length), index;
 
         // for (int i=0; i<rights.length; i++) {
@@ -51,6 +52,14 @@ public class BotPlayerGameManager implements PlayerGameManager {
         //             break;
         //     }
         // }
+    }
+
+    public void makeChancellor(SimpleRight<Chancellor.rights> rights[]) {
+
+    }
+
+    public void unmakeChancellor() {
+
     }
 
     public void unmakePresident() {

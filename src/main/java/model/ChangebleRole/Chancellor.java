@@ -1,20 +1,21 @@
 package model.ChangebleRole;
 
-public class Chancellor extends Political<Chancellor.rights> implements ChancellorAccess {
-    public static enum rights {
+import java.util.EnumMap;
+
+public class Chancellor extends Political<Chancellor.RightTypes> implements ChancellorAccess {
+    public static enum RightTypes {
         VetoPower
     }
 
-    public Chancellor() {
-        super(rights.class, 2);
+    private void vetoPower() {
+        
     }
 
-    public void vetoPower() {
-        System.out.println("Veto triggered");
-        if (super.areCardsInHands() && super.tryUseRight(rights.VetoPower)) { 
-            System.out.println("In 1st if");
-            if (!super.chooseCardToRemove(null))
-                super.increaseRightUsage(rights.VetoPower, 1);
-        }
+    public Chancellor() {
+        super(2);
+
+        EnumMap<RightTypes, Political.Right<?>> rights = new EnumMap<>(getCurrentRights());
+        rights.put(RightTypes.VetoPower, new Right<Integer>(Request.None, Integer.class));
+        super.initializeRights(rights);
     }
 }

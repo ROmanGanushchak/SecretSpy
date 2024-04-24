@@ -1,13 +1,13 @@
 package model.ChangebleRole;
 
-import java.util.AbstractMap;
 import java.util.ArrayList;
+import java.util.EnumMap;
 import model.Cards.CardsArray.Card;
+import model.Game.GamePresidentAccess;
 import model.Game.PlayerModel;
 import model.Observers.ActObservers;
 import model.Observers.ActObserversAccess;
-import model.Observers.ActionObserver;
-import model.Observers.ObserversAccess;
+import model.Observers.ActObservers.MethodToCall;
 
 abstract class ChangebleRole {
     private PlayerModel player;
@@ -36,13 +36,40 @@ abstract class ChangebleRole {
 
 
 public abstract class Political<R extends Enum<R>> extends ChangebleRole {
-    public static class Right<R> extends AbstractMap.SimpleEntry<R, Integer> {
-        public Right(R r, Integer count) {
-            super(r, count);
+    public static enum Request {
+        None(Integer.class), 
+        ChoosePlayer(Integer.class);
+
+        private Class<?> type;
+        Request(Class<?> type) {
+            this.type = type;
+        }
+
+        public Class<?> getType() {
+            return type;
         }
     }
 
-    private Right<R> currentRights[]; // -1 -> activated infinite count of use, 0 -> isnt activated, >=1 activated and has limited usage
+    public static abstract class Right {
+        private int useCount;
+        private Request request;
+
+        public Right(Request request) {
+            this.request = request;
+        }
+
+        public int getUseCount() {
+            return this.useCount;
+        }
+
+        public Request getRequest() {
+            return this.request;
+        }
+
+        public abstract Object execute(GamePresidentAccess game, Object... params);
+    }
+
+    private EnumMap<R, Right> currentRights; // -1 -> activated infinite count of use, 0 -> isnt activated, >=1 activated and has limited usage
     private ArrayList<Card> cards;
     private int cardsCount;
 
@@ -50,18 +77,20 @@ public abstract class Political<R extends Enum<R>> extends ChangebleRole {
     private ActObservers<ArrayList<Card>> cardAddingObservers;
     private ActObservers<R> powerChangesObserver;
 
-    public Political(Class<R> rights, int cardsCount) {
+    public Political(int cardsCount) {
         this.cardsCount = cardsCount;
-        R[] constants = rights.getEnumConstants();
-
-        this.currentRights = new Right[constants.length];
-        for (int i=0; i < constants.length; i++) {
-            currentRights[i] = new Right<R>(constants[i], 0);
-        }
 
         this.cardAddingObservers = new ActObservers<>();
         this.cardChoosenObservers = new ActObservers<>();
         this.powerChangesObserver = new ActObservers<>();
+    }
+
+    protected void initializeRights(EnumMap<R, Right> rights) {
+        this.currentRights = rights;
+    }
+
+    public Object useRight(R right, Object... parametrs) {
+        return currentRights.get(right).execute(null, parametrs);
     }
 
     public void giveCards(ArrayList<Card> cards) {
@@ -97,6 +126,42 @@ public abstract class Political<R extends Enum<R>> extends ChangebleRole {
         return true;
     }
 
+    public void expandPower(R newRight, int maxUsageCount) {
+        this.currentRights.get(newRight).useCount = maxUsageCount;
+        this.powerChangesObserver.informAll(newRight);
+    }
+
+    public void lowerPower(R newRight) {
+        this.currentRights.get(newRight).useCount = 0;
+        this.powerChangesObserver.informAll(newRight);
+    }
+
+    public boolean isRightActivated(R right) {
+        return this.currentRights.get(right).useCount != 0;
+    }
+
+    public int getRemainedRightUsage(R right) {
+        return this.currentRights.get(right).useCount;
+    }
+
+    public void increaseRightUsage(R right, int increasment) {
+        if (this.currentRights.get(right).useCount != -1) {
+            currentRights.get(right).useCount = increasment + currentRights.get(right).useCount;
+            this.powerChangesObserver.informAll(right);
+        }
+    }
+
+    protected boolean tryUseRight(R right) {
+        if (this.isRightActivated(right)) {
+            if (this.currentRights.get(right).useCount != -1 && this.currentRights.get(right).useCount != 0)
+                this.currentRights.get(right).useCount--;
+            
+            this.powerChangesObserver.informAll(right);
+            return true;
+        }
+        return false;
+    }
+
     public ActObserversAccess<ArrayList<Card>> getCardChoosedObserver() {
         return this.cardChoosenObservers;
     }
@@ -109,52 +174,17 @@ public abstract class Political<R extends Enum<R>> extends ChangebleRole {
         return this.powerChangesObserver;
     }
 
-    public void expandPower(R newRight, int maxUsageCount) {
-        this.currentRights[newRight.ordinal()].setValue(maxUsageCount);
-        this.powerChangesObserver.informAll(newRight);
-    }
-
-    public void lowerPower(R newRight) {
-        this.currentRights[newRight.ordinal()].setValue(0);
-        this.powerChangesObserver.informAll(newRight);
-    }
-
-    public boolean isRightActivated(R right) {
-        return this.currentRights[right.ordinal()].getValue() != 0;
-    }
-
-    public int getRemainedRightUsage(R right) {
-        return this.currentRights[right.ordinal()].getValue();
-    }
-
-    public void increaseRightUsage(R right, int increasment) {
-        if (this.currentRights[right.ordinal()].getValue() != -1) {
-
-            this.currentRights[right.ordinal()].setValue(
-                increasment + this.currentRights[right.ordinal()].getValue());
-            
-            this.powerChangesObserver.informAll(right);
-        }
-    }
-
-    public boolean tryUseRight(R right) {
-        if (!this.isRightActivated(right)) {
-            System.out.println("Trying to use political right that isnt activated");
-            return false;
-        } else {
-            if (this.currentRights[right.ordinal()].getValue() != -1 && this.currentRights[right.ordinal()].getValue() != 0)
-                this.currentRights[right.ordinal()].setValue(this.currentRights[right.ordinal()].getValue()-1);
-            
-            this.powerChangesObserver.informAll(right);
-            return true;
-        }
-    }
-
-    public Right<R>[] getCurrentRights() {
+    public EnumMap<R, Right> getCurrentRights() {
         return this.currentRights;
     }
 
     public boolean areCardsInHands() {
         return this.cards != null;
+    }
+
+    public <T> boolean subscribeForCall(R right, MethodToCall<T> method) {
+        
+
+        return true;
     }
 }

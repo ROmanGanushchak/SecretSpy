@@ -1,11 +1,11 @@
 package model.ChangebleRole;
 
-import model.Cards.CardsArray.Card;
+import java.util.EnumMap;
+import model.ChangebleRole.Political.Request;
 import model.Game.GamePresidentAccess;
-import model.Game.PlayerModel;
 
-public class President extends Political<President.rights> implements PresidentAccess { // add observer for rights changings
-    public static enum rights {
+public class President extends Political<President.RightTypes> implements PresidentAccess {
+    public static enum RightTypes {
         ChoosingChancellor,         
         RevealingRoles,             
         CheckingUpperThreeCards,    
@@ -14,56 +14,79 @@ public class President extends Political<President.rights> implements PresidentA
     }
 
     private GamePresidentAccess game;
+    private EnumMap<RightTypes, Right> rights;
 
-    public President(GamePresidentAccess game) {
-        super(rights.class, 3);
-        this.game = game;
+    public President() {
+        super(3);
+        rights = new EnumMap<>(RightTypes.class);
 
-        this.expandPower(rights.ChoosingChancellor, -1);
-        this.expandPower(rights.CheckingUpperThreeCards, 1);
+        rights.put(RightTypes.ChoosingChancellor, new ChoosingChancellorRight());
+        rights.put(RightTypes.RevealingRoles, new RevealingRoles());
+        rights.put(RightTypes.CheckingUpperThreeCards, new CheckingUpperThreeCards());
+        rights.put(RightTypes.ChoosingNextPresident, new ChoosingNextPresident());
+        rights.put(RightTypes.KillingPlayers, new KillingPlayers());
+
+        super.initializeRights(rights);
     }
-    
-    public boolean suggestingChancellor(int playerID) {
-        if (this.tryUseRight(rights.ChoosingChancellor))
-            return this.game.presidentSuggestChancellor(playerID);
-        return false;
-    }
+}
 
-    public PlayerModel.mainRoles revealeTheRole(int playerId) {
-        if (this.tryUseRight(rights.RevealingRoles)) {
-            PlayerModel.mainRoles role = this.game.revealePlayerRole(playerId);
-            if (role == PlayerModel.mainRoles.Undefined)
-                this.increaseRightUsage(rights.RevealingRoles, 1);
-            
-            if (role == PlayerModel.mainRoles.ShadowLeader) 
-                return PlayerModel.mainRoles.Spy;
-            return role;
-        }
+class ChoosingChancellorRight extends Political.Right {
+    public ChoosingChancellorRight() { super(Request.ChoosePlayer); }
 
+    @Override
+    public Object execute(GamePresidentAccess game, Object... params) {
+        if (params.length == 1) 
+            return game.presidentSuggestChancellor((Integer) params[0]);
+        System.out.println("Uncorrect paramters count for Right");
         return null;
     }
+}
 
-    public Card[] checkingUpperThreeCards() {
-        if (this.tryUseRight(rights.CheckingUpperThreeCards))
-            return this.game.revealeUpperCards(3);
+class RevealingRoles extends Political.Right {
+    public RevealingRoles() { super(Request.ChoosePlayer); }
+
+    @Override
+    public Object execute(GamePresidentAccess game, Object... params) {
+        if (params.length == 1) 
+            return game.revealePlayerRole((Integer) params[0]);
+        System.out.println("Uncorrect paramters count for Right");
         return null;
     }
+}
 
-    public boolean choosingNextPresident(int playerId) {
-        if (this.tryUseRight(rights.ChoosingNextPresident)) {
-            boolean result = this.game.setNextPresidentCandidate(playerId);
-            if (result == false) 
-                this.increaseRightUsage(rights.ChoosingNextPresident, 1);
-            return result;
-        }
-        return false;
+class CheckingUpperThreeCards extends Political.Right {
+    public CheckingUpperThreeCards() { super(Request.None); }
+
+    @Override
+    public Object execute(GamePresidentAccess game, Object... params) {
+        if (params.length == 1) 
+            return game.revealeUpperCards(3);
+        System.out.println("Uncorrect paramters count for Right");
+        return null;
     }
+}
 
-    public void killingPlayers(int playerId) {
-        if (this.tryUseRight(rights.KillingPlayers)) {
-            if (!this.game.killPlayer(playerId))
-                this.increaseRightUsage(rights.KillingPlayers, 1);
-        }
+class ChoosingNextPresident extends Political.Right {
+    public ChoosingNextPresident() { super(Request.ChoosePlayer); }
+
+    @Override
+    public Object execute(GamePresidentAccess game, Object... params) {
+        if (params.length == 1) 
+            return game.setNextPresidentCandidate((Integer) params[0]);
+        System.out.println("Uncorrect paramters count for Right");
+        return null;
+    }
+}
+
+class KillingPlayers extends Political.Right {
+    public KillingPlayers() { super(Request.ChoosePlayer); }
+
+    @Override
+    public Object execute(GamePresidentAccess game, Object... params) {
+        if (params.length == 1) 
+            return game.killPlayer((Integer) params[0]);
+        System.out.println("Uncorrect paramters count for Right");
+        return null;
     }
 }
 

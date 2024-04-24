@@ -1,28 +1,24 @@
 package model.ChangebleRole;
 
 import java.util.ArrayList;
+import java.util.EnumMap;
+
 import model.Cards.CardsArray.Card;
-import model.ChangebleRole.Political.Right;
-import model.ChangebleRole.President.rights;
+import model.ChangebleRole.President.RightTypes;
 import model.Game.PlayerModel;
 import model.Observers.ActObserversAccess;
 
 public interface PresidentAccess {
-    public boolean isRightActivated(rights right);
-    public PlayerModel.mainRoles revealeTheRole(int playerID);
+    public boolean isRightActivated(RightTypes right);
     public PlayerModel getPlayer();
-    public boolean suggestingChancellor(int playerId);
-    public Card[] checkingUpperThreeCards();
-    public boolean choosingNextPresident(int playerId);
-    public void killingPlayers(int playerId);
-    public Right<President.rights>[] getCurrentRights();
+    public EnumMap<President.RightTypes, Political.Right> getCurrentRights();
 
     public ActObserversAccess<ArrayList<Card>> getCardChoosedObserver();
     public ActObserversAccess<ArrayList<Card>> getCardAddingObserver();
-    public ActObserversAccess<rights> getPowerChangerObserver();
+    public ActObserversAccess<RightTypes> getPowerChangerObserver();
     public ActObserversAccess<Integer> getPlayerChangesObservers();
     public boolean chooseCardToRemove(Card card);
 
-    public void expandPower(rights newRight, int maxUsageCount);
-    public void lowerPower(rights newRight);
+    public void expandPower(RightTypes newRight, int maxUsageCount);
+    public void lowerPower(RightTypes newRight);
 }
