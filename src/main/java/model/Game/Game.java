@@ -146,7 +146,7 @@ public class Game implements GamePresidentAccess {
         if (this.spysInParlamentCount == 3) this.president.expandPower(President.RightTypes.CheckingUpperThreeCards, 1);
         if (this.spysInParlamentCount == 3) this.president.expandPower(President.RightTypes.ChoosingNextPresident, 1);
         if (this.spysInParlamentCount == 4) this.president.expandPower(President.RightTypes.KillingPlayers, 2);
-        if (this.spysInParlamentCount == 5) this.chancellor.expandPower(Chancellor.rights.VetoPower, 1);
+        if (this.spysInParlamentCount == 5) this.chancellor.expandPower(Chancellor.RightTypes.VetoPower, 1);
 
         if (this.spysInParlamentCount == this.requiredSpyCount) {
             finishGame(false);
@@ -344,10 +344,7 @@ public class Game implements GamePresidentAccess {
     }
 
     public PlayerModel.mainRoles revealePlayerRole(int playerID) {
-        if (!this.possibleEvents.get(EventTypes.RevealingRoles))
-            return PlayerModel.mainRoles.Undefined;
-
-        if (this.players.get(playerID) == null) 
+        if (!this.possibleEvents.get(EventTypes.RevealingRoles) || this.players.get(playerID) == null)
             return PlayerModel.mainRoles.Undefined;
         return this.players.get(playerID).getRole();
     }

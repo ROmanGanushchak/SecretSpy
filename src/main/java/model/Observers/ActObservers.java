@@ -2,7 +2,6 @@ package model.Observers;
 
 import java.util.AbstractMap;
 import java.util.ArrayList;
-import java.util.Iterator;
 
 public class ActObservers<T> implements ActObserversAccess<T> {
     @FunctionalInterface

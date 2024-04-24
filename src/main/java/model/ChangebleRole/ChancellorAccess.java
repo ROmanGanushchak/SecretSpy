@@ -13,11 +13,12 @@ public interface ChancellorAccess {
     public PlayerModel getPlayer();
     public EnumMap<RightTypes, Political.Right> getCurrentRights();
 
+    public Object useRight(Chancellor.RightTypes right, Object... parametrs);
     public ActObserversAccess<ArrayList<Card>> getCardChoosedObserver();
     public ActObserversAccess<ArrayList<Card>> getCardAddingObserver();
     public ActObserversAccess<RightTypes> getPowerChangerObserver();
     public ActObserversAccess<Integer> getPlayerChangesObservers();
-    public boolean chooseCardToRemove(Card card);
+    public boolean chooseCardToRemove(Integer card);
 
     public void expandPower(RightTypes newRight, int maxUsageCount);
     public void lowerPower(RightTypes newRight);

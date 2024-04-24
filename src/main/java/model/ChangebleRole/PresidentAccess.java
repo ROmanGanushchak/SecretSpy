@@ -17,7 +17,8 @@ public interface PresidentAccess {
     public ActObserversAccess<ArrayList<Card>> getCardAddingObserver();
     public ActObserversAccess<RightTypes> getPowerChangerObserver();
     public ActObserversAccess<Integer> getPlayerChangesObservers();
-    public boolean chooseCardToRemove(Card card);
+    public Object useRight(President.RightTypes right, Object... parametrs);
+    public boolean chooseCardToRemove(Integer card);
 
     public void expandPower(RightTypes newRight, int maxUsageCount);
     public void lowerPower(RightTypes newRight);

@@ -3,7 +3,6 @@ package model.ChangebleRole;
 import java.util.ArrayList;
 import java.util.EnumMap;
 import model.Cards.CardsArray.Card;
-import model.Game.GamePresidentAccess;
 import model.Game.PlayerModel;
 import model.Observers.ActObservers;
 import model.Observers.ActObserversAccess;
@@ -66,7 +65,12 @@ public abstract class Political<R extends Enum<R>> extends ChangebleRole {
             return this.request;
         }
 
-        public abstract Object execute(GamePresidentAccess game, Object... params);
+        protected void increaseUseCount(int value) {
+            if (useCount != -1)
+                this.useCount += value;
+        }
+
+        public abstract Object execute(Object... params);
     }
 
     private EnumMap<R, Right> currentRights; // -1 -> activated infinite count of use, 0 -> isnt activated, >=1 activated and has limited usage
@@ -90,7 +94,7 @@ public abstract class Political<R extends Enum<R>> extends ChangebleRole {
     }
 
     public Object useRight(R right, Object... parametrs) {
-        return currentRights.get(right).execute(null, parametrs);
+        return currentRights.get(right).execute(parametrs);
     }
 
     public void giveCards(ArrayList<Card> cards) {
@@ -107,19 +111,18 @@ public abstract class Political<R extends Enum<R>> extends ChangebleRole {
     }
 
     // if card is null then removes all cards
-    public boolean chooseCardToRemove(Card card) {
+    public boolean chooseCardToRemove(Integer card) {
         System.out.println("Card was removed");
 
         if (this.cards == null) return false;
         if (card == null) {
+            this.cards = null;
             this.cardChoosenObservers.informAll(null);
             return true;
         }
+        if (card > cards.size()) return false;
 
-        if (!this.cards.remove(card)) {
-            System.out.println("Removed card is not present in cards or presented twice");
-            return false;
-        }
+        this.cards.remove((int) card);
 
         this.cardChoosenObservers.informAll(cards);
         this.cards = null;

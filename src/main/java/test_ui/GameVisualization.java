@@ -17,6 +17,7 @@ import test_ui.Components.Component.Component;
 import GameController.GameControllerVisualService;
 import User.UserData;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -89,6 +90,7 @@ public class GameVisualization { // game visualization має компонент
     private SpyBoardController spyBoardController;
 
     private ActObservers<Integer> cardRemovalChooseObservers;
+    private ActObservers<Integer> playerChosenObservers;
 
     private Map<Integer, UserData.VisualData> playersVisualData;
     private Map<Integer, PlayerPaneController> playersIcons;
@@ -141,6 +143,8 @@ public class GameVisualization { // game visualization має компонент
                         Component.reveal(onBoardPane);
                         this.popupLayerManager.finishCurent();
                 });
+            
+            this.playerChosenObservers = new ActObservers<>();
         } catch (Exception e) {
             System.out.println("unsuccesfull initilize of main controller");
             e.printStackTrace();
@@ -169,8 +173,8 @@ public class GameVisualization { // game visualization має компонент
         for (Map.Entry<Integer, UserData.VisualData> player : playersVisualData.entrySet()) {
             PlayerPaneController playerPane = new PlayerPaneController(playerIconHodler);
             playerPane.initialize(player.getValue().getName(), player.getValue().getImageURL(), player.getKey());
-
             playersIcons.put(player.getKey(), playerPane);
+            playerPane.getChooseButObservers().subscribe((Integer val) -> {this.playerChosenObservers.informAll(val);});
         }
     }
 
@@ -206,8 +210,8 @@ public class GameVisualization { // game visualization має компонент
         this.gameControllerProxy = gameContrlProxy;
     }
 
-    public void revealCards(ArrayList<Card> cards) {
-        revealingCards.initialize(cards);
+    public void revealCards(Card[] cards) {
+        revealingCards.initialize(new ArrayList<>(Arrays.asList(cards)));
 
         Component.hide(onBoardPane);
         this.popupLayerManager.askActivation(revealingCards);
@@ -248,6 +252,7 @@ public class GameVisualization { // game visualization має компонент
     }
 
     public void setIconPlayerPane(PlayerPaneController.Icons icon, int playerID) {
+        System.out.println(playerID + " " + this.playersIcons.get(playerID));
         this.playersIcons.get(playerID).showIcon(icon);
     }
 
@@ -284,6 +289,10 @@ public class GameVisualization { // game visualization має компонент
 
         Component.hide(onBoardPane);
         popupLayerManager.askActivation(showDeath);
+    }
+
+    public void forceToChoosePlayer(ArrayList<Integer> disanbledPlayers) {
+
     }
 
     public void addCardToBoard(Card.states type) { // AddSpyCardOnScreen
@@ -348,6 +357,10 @@ public class GameVisualization { // game visualization має компонент
 
     public VBox getPlayersIconsHolder() {
         return this.playerIconHodler;
+    }
+
+    public ActObserversAccess<Integer> getPlayerChosenObservers() {
+        return this.playerChosenObservers;
     }
 
     public ActObserversAccess<Integer> getCardRemovalChooseObservers() {

@@ -2,6 +2,7 @@ package PlayerGameManager;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.EnumMap;
 import java.util.Map;
 
 import GameController.GameControllerVisualService;
@@ -10,9 +11,9 @@ import javafx.fxml.FXMLLoader;
 import javafx.scene.Scene;
 import javafx.scene.layout.VBox;
 import model.Cards.CardsArray;
-import model.ChangebleRole.Political.SimpleRight;
 import model.ChangebleRole.Chancellor;
 import model.ChangebleRole.Political;
+import model.ChangebleRole.Political.Right;
 import model.ChangebleRole.President;
 import model.Voting.Voting;
 import test_ui.App;
@@ -24,6 +25,14 @@ public class HumanPlayerGameManager extends GameVisualization implements PlayerG
     private GameControllerVisualService gameController;
 
     private UserData userData;
+    private static enum CurrentRoles {
+        President, Chancellor, None
+    }
+
+    private CurrentRoles currentRole;
+    private President.RightTypes presidentRightToUse;
+    private Chancellor.RightTypes chancellorRightToUse;
+
     public UserData.VisualData getVisualData() {
         return this.userData.visualData;
     }
@@ -38,6 +47,7 @@ public class HumanPlayerGameManager extends GameVisualization implements PlayerG
 
     public HumanPlayerGameManager(int id) {
         this.userData = new UserData(id, "Player " + Integer.toString(id), "board.png");
+        currentRole = CurrentRoles.None;
     }
 
     public void initializeScreen() {
@@ -64,22 +74,47 @@ public class HumanPlayerGameManager extends GameVisualization implements PlayerG
         this.currentVoting = null;
 
         super.getVotingResultObservers().subscribe((Boolean result) -> this.vote(result));
-
-        // super.addCardToBoard(Card.states.Liberal);
     }
 
     public void informRightPressed(Integer value) {
         System.out.println("type -> " + value);
     }
 
-    public void makePresident(Political.SimpleRight<President.RightTypes> rights[]) {
+    public void kill() {
+        super.showDeathMessge();
+    }
+
+    public void makePresident(EnumMap<President.RightTypes, Political.Right> rights) {
         VBox rightsHolder = super.getRightsHolder();
 
-        for (SimpleRight<President.RightTypes> right : rights) {
-            if (right.getValue() != 0) {
+        for (Map.Entry<President.RightTypes, Political.Right> right : rights.entrySet()) {
+            if (right.getValue().getUseCount() != 0) {
                 AbilityController rightController = new AbilityController(rightsHolder);
-                rightController.setup(right.getKey().toString(), right.getValue(), right.getKey().ordinal());
-                rightController.getUseButtonObservers().subscribe((Integer value) -> informRightPressed(value));
+                rightController.setup(right.getKey().toString(), right.getValue().getUseCount(), right.getKey().ordinal());
+                rightController.getUseButtonObservers().subscribe((Integer value) -> {
+                    if (this.presidentRightToUse != null)
+                        return;
+                    
+                    System.out.println("Right lambda executed");
+
+                    Right rightClass = rights.get(President.RightTypes.get(value));
+                    System.out.println("Right to execute " + President.RightTypes.get(value).toString());
+                    switch (rightClass.getRequest()) {
+                        case None:
+                            System.out.println("None right");
+                            gameController.executePresidentRight(userData.getID(), right.getKey());
+                            break;
+                        case ChoosePlayer:
+                            this.presidentRightToUse = right.getKey();
+                            super.getPlayerChosenObservers().subscribe(
+                                (Integer player) -> {
+                                    System.out.println("Player chosen");
+                                    gameController.executePresidentRight(userData.getID(), this.presidentRightToUse, player); 
+                                    presidentRightToUse = null;
+                                }, 1);
+                            break;
+                    }
+                });
             }
         }
     }
@@ -90,18 +125,19 @@ public class HumanPlayerGameManager extends GameVisualization implements PlayerG
     }
 
     public void changePresident(Integer oldPresident, Integer newPresident) {
-        if (oldPresident != null)
+        if (oldPresident != -1)
             super.setIconPlayerPane(PlayerPaneController.Icons.NONE, oldPresident);
-        super.setIconPlayerPane(PlayerPaneController.Icons.PRESIDENT, newPresident);
+        if (newPresident != -1)
+            super.setIconPlayerPane(PlayerPaneController.Icons.PRESIDENT, newPresident);
     }
 
-    public void makeChancellor(SimpleRight<Chancellor.rights> rights[]) {
+    public void makeChancellor(EnumMap<Chancellor.RightTypes, Political.Right> rights) {
         VBox rightsHolder = super.getRightsHolder();
 
-        for (SimpleRight<Chancellor.rights> right : rights) {
-            if (right.getValue() != 0) {
+        for (Map.Entry<Chancellor.RightTypes, Political.Right> right : rights.entrySet()) {
+            if (right.getValue().getUseCount() != 0) {
                 AbilityController rightController = new AbilityController(rightsHolder);
-                rightController.setup(right.getKey().toString(), right.getValue(), right.getKey().ordinal());
+                rightController.setup(right.getKey().toString(), right.getValue().getUseCount(), right.getKey().ordinal());
                 rightController.getUseButtonObservers().subscribe((Integer value) -> informRightPressed(value));
             }
         }
@@ -113,22 +149,16 @@ public class HumanPlayerGameManager extends GameVisualization implements PlayerG
     }
 
     public void changeChancellor(Integer oldChancellor, Integer newChancellor) {
-        if (oldChancellor != null)
-            super.setIconPlayerPane(PlayerPaneController.Icons.NONE, oldChancellor);
-        super.setIconPlayerPane(PlayerPaneController.Icons.CHANCELLOR, newChancellor);
-    }
+        System.out.printf("Chancellors -> %d %d\n", oldChancellor, newChancellor);
 
-    @Override
-    public void setPlayersVisuals(Map<Integer, UserData.VisualData> playersVisualData) {
-        super.setPlayersVisuals(playersVisualData);
-        Map<Integer, PlayerPaneController> icons = super.getPlayerIcons();
-        for (Map.Entry<Integer, PlayerPaneController> icon : icons.entrySet()) {
-            icon.getValue().getChooseButObservers().subscribe((Integer val) -> System.out.println("Player chosen " + val));
-        }
+        if (oldChancellor != -1)
+            super.setIconPlayerPane(PlayerPaneController.Icons.NONE, oldChancellor);
+        if (newChancellor != -1)
+            super.setIconPlayerPane(PlayerPaneController.Icons.CHANCELLOR, newChancellor);
     }
 
     public void giveCardsToRemove(ArrayList<CardsArray.Card> cards) {
-        super.getCardRemovalChooseObservers().subscribe((Integer i) -> System.out.println("card was chosn " + i));
+        super.getCardRemovalChooseObservers().subscribe((Integer i) -> gameController.informCardRemoved(i, userData.getID()));
         super.showCardsToRemove(cards);
     }
 

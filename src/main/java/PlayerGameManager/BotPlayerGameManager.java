@@ -1,15 +1,18 @@
 package PlayerGameManager;
 
 import java.util.ArrayList;
+import java.util.EnumMap;
 import java.util.Random;
 
 import GameController.GameControllerVisualService;
 import User.UserData;
 import model.ChangebleRole.President;
+import model.Game.PlayerModel;
 import model.Cards.CardsArray;
+import model.Cards.CardsArray.Card;
 import model.ChangebleRole.Chancellor;
-import model.ChangebleRole.Political.SimpleRight;
 import model.Voting.Voting;
+import model.ChangebleRole.Political;
 
 public class BotPlayerGameManager implements PlayerGameManager {
     private GameControllerVisualService gameController;
@@ -36,7 +39,9 @@ public class BotPlayerGameManager implements PlayerGameManager {
         voteForChancellor(voting);
     }
 
-    public void makePresident(SimpleRight<President.RightTypes> rights[]) {
+    @Override
+    public void makePresident(EnumMap<President.RightTypes, Political.Right> rights) {
+        System.out.println("kfdfl");
         // int startIndex = rand.nextInt(rights.length), index;
 
         // for (int i=0; i<rights.length; i++) {
@@ -54,7 +59,7 @@ public class BotPlayerGameManager implements PlayerGameManager {
         // }
     }
 
-    public void makeChancellor(SimpleRight<Chancellor.rights> rights[]) {
+    public void makeChancellor(EnumMap<Chancellor.RightTypes, Political.Right> rights) {
 
     }
 
@@ -76,5 +81,18 @@ public class BotPlayerGameManager implements PlayerGameManager {
 
     public void giveCardsToRemove(ArrayList<CardsArray.Card> cards) {
 
+    }
+
+    @Override
+    public void revealCards(Card[] cards) {
+        System.out.println("fklfdfklfd");
+    }
+
+    public void kill() {
+
+    }
+
+    public void showRole(PlayerModel.mainRoles role) {
+        
     }
 }

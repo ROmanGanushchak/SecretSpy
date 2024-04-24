@@ -13,6 +13,8 @@ import model.ChangebleRole.Chancellor;
 import model.ChangebleRole.President;
 import model.ChangebleRole.President.RightTypes;
 import model.Game.Game;
+import model.Game.PlayerModel;
+import model.Game.PlayerModel.mainRoles;
 import model.Voting.VoteObserver;
 import model.Voting.Voting;
 import test_ui.GameVisualization;
@@ -25,24 +27,14 @@ public class GameController implements GameControllerModuleService, GameControll
     private GameControllerVisualService visualProxy;
     private GameControllerModuleService moduleProxy;
     private Voting currentVoting;
-    private Integer currentPresident;
-    private Integer currentChancellor;
+    private Integer currentPresident = -1;
+    private Integer currentChancellor = -1;
 
     private Scanner scanner = new Scanner(System.in);
 
-    private ArrayList<Card> cards;
-
-    private void getCards(ArrayList<Card> cards) {
-        for (int i=0; i<cards.size(); i++) {
-            System.out.print(cards.get(i).state + " ");
-        }System.out.println();
-
-        this.cards = cards;
-    }
-
     private void makePresident(Integer player) {
-        System.out.println("Make president");
-        if (currentPresident != null)
+        System.out.printf("Make president %d", player);
+        if (currentPresident != -1)
             players.get(currentPresident).unmakePresident();
         
         players.get(player).makePresident(this.gameModel.getPresident().getCurrentRights());
@@ -54,14 +46,15 @@ public class GameController implements GameControllerModuleService, GameControll
     }
 
     private void makeChancellor(Integer player) {
-        if (currentPresident != null)
+        if (currentPresident != -1)
             players.get(currentPresident).unmakeChancellor();
 
         for (HumanPlayerGameManager humanPlayer : humanPlayers) {
             humanPlayer.changeChancellor(currentChancellor, player);
         }
         
-        players.get(player).makeChancellor(this.gameModel.getChancellor().getCurrentRights());
+        if (player != -1)
+            players.get(player).makeChancellor(this.gameModel.getChancellor().getCurrentRights());
         currentChancellor = player;
     }
 
@@ -87,9 +80,12 @@ public class GameController implements GameControllerModuleService, GameControll
         this.gameModel = new Game(players.size(), moduleProxy, 17, -1);
         
         this.gameModel.getPresident().getCardAddingObserver().subscribe(
-            (ArrayList<Card> cards) -> this.players.get(currentPresident).giveCardsToRemove(cards));
+            (ArrayList<Card> cards) -> {
+                System.out.printf("Giving cards to president %d\n", currentPresident);
+                this.players.get(currentPresident).giveCardsToRemove(cards);});
         
-        this.gameModel.getChancellor().getCardAddingObserver().subscribe((ArrayList<Card> cards) -> this.getCards(cards));
+        this.gameModel.getChancellor().getCardAddingObserver().subscribe(
+            (ArrayList<Card> cards) -> this.players.get(currentChancellor).giveCardsToRemove(cards));
 
         this.gameModel.getPresident().getPlayerChangesObservers().subscribe((Integer player) -> makePresident(player));
         this.gameModel.getChancellor().getPlayerChangesObservers().subscribe((Integer player) -> makeChancellor(player));
@@ -122,19 +118,15 @@ public class GameController implements GameControllerModuleService, GameControll
 
         for (HumanPlayerGameManager player : humanPlayers) {
             player.setProxyGameController(this.visualProxy);
-            this.gameModel.getCardAddingToBoardObservers().subscribe(((Card card) -> player.addCardToBoard(card.state)));
-            
-            this.gameModel.getFailedElectionObservers().subscribe((Integer failed) -> player.changeFailedVotingCount(failed));
-            
+
             player.showRole(this.gameModel.getRole(player.getPlayerID()));
             player.setPlayersVisuals(visualData);
 
             player.initializeGame();
         }
 
-        System.out.println("Before make president");
+        // System.out.println("Before make president");
         makePresident(this.gameModel.getPresident().getPlayer().getId());
-        currentPresident = this.gameModel.getPresident().getPlayer().getId();
     }
 
     public void requestVoting(Voting voting, int presidentId, int chancellorId) {
@@ -161,13 +153,13 @@ public class GameController implements GameControllerModuleService, GameControll
             // president
             case "cr":
                 num = scanner.nextInt();
-                this.gameModel.getPresident().revealeTheRole(num);
+                this.gameModel.getPresident().useRight(President.RightTypes.RevealingRoles);
                 break;
             case "rr":
                 this.gameModel.getPresident().expandPower(President.RightTypes.RevealingRoles, 2);
                 break;
             case "pcheck3":
-                Card cards[] = this.gameModel.getPresident().checkingUpperThreeCards();
+                Card cards[] = (Card[]) this.gameModel.getPresident().useRight(President.RightTypes.CheckingUpperThreeCards);
                 if (cards != null) 
                     System.out.println(cards[0].state + " " + cards[1].state + " " + cards[2].state);
                 break;
@@ -176,18 +168,18 @@ public class GameController implements GameControllerModuleService, GameControll
                 break;
             case "chooseChancellor":
                 num = scanner.nextInt();
-                this.gameModel.getPresident().suggestingChancellor(players.get(num).getPlayerID());
+                this.gameModel.getPresident().useRight(President.RightTypes.ChoosingChancellor, players.get(num).getPlayerID());
                 break;
             case "setNextPres":
                 num = scanner.nextInt();
-                this.gameModel.getPresident().choosingNextPresident(players.get(num).getPlayerID());
+                this.gameModel.getPresident().useRight(President.RightTypes.ChoosingNextPresident, players.get(num).getPlayerID());
                 break;
             case "activeNextPres":
                 this.gameModel.getPresident().expandPower(RightTypes.ChoosingNextPresident, 1);
                 break;
             case "kill":
                 num = scanner.nextInt();
-                this.gameModel.getPresident().killingPlayers(num);
+                this.gameModel.getPresident().useRight(President.RightTypes.KillingPlayers, num);
                 break;
             case "killActivate":
                 this.gameModel.getPresident().expandPower(President.RightTypes.KillingPlayers, 1);
@@ -195,20 +187,20 @@ public class GameController implements GameControllerModuleService, GameControll
             
             //chancellor
             case "veto":
-                this.gameModel.getChancellor().vetoPower();
+                this.gameModel.getChancellor().useRight(Chancellor.RightTypes.VetoPower);
                 break;
             case "vetoActive":
-                this.gameModel.getChancellor().expandPower(Chancellor.rights.VetoPower, 1);
+                this.gameModel.getChancellor().expandPower(Chancellor.RightTypes.VetoPower, 1);
                 break;
             
             // electing
             case "ChooseChanCard":
                 num = scanner.nextInt();
-                System.out.println(this.gameModel.getChancellor().chooseCardToRemove(this.cards.get(num)));
+                System.out.println(this.gameModel.getChancellor().chooseCardToRemove(num));
                 break;
             case "ChoosePresCard":
                 num = scanner.nextInt();
-                System.out.println(this.gameModel.getPresident().chooseCardToRemove(this.cards.get(num)));
+                System.out.println(this.gameModel.getPresident().chooseCardToRemove(num));
                 break;
             
             case "AddLiberalCardOnScreen":
@@ -219,12 +211,12 @@ public class GameController implements GameControllerModuleService, GameControll
                 humanPlayers.get(0).addCardToBoard(Card.states.Spy);
                 break;
             
-            case "RealeCardsShow":
-                Card card1 = new Card(); Card card2 = new Card(); Card card3 = new Card();
-                card1.state = Card.states.Liberal; card2.state = Card.states.Liberal; card3.state = Card.states.Liberal;
-                ArrayList<Card> cards1 = new ArrayList<>(Arrays.asList(card1, card2, card3));
-                humanPlayers.get(0).revealCards(cards1);
-                break;
+            // case "RealeCardsShow":
+            //     Card card1 = new Card(); Card card2 = new Card(); Card card3 = new Card();
+            //     card1.state = Card.states.Liberal; card2.state = Card.states.Liberal; card3.state = Card.states.Liberal;
+            //     ArrayList<Card> cards1 = new ArrayList<>(Arrays.asList(card1, card2, card3));
+            //     humanPlayers.get(0).revealCards(cards1);
+            //     break;
             
             case "ShowPlayerKilling":
                 humanPlayers.get(0).showDeathMessge();
@@ -232,8 +224,74 @@ public class GameController implements GameControllerModuleService, GameControll
         }
     }
 
+    public void executePresidentRight(President.RightTypes right, Object... params) {
+        Object result = this.gameModel.getPresident().useRight(right, params);
+
+        // switch (right) {
+        //     case Ch
+        // }
+    }
+
+    public void executeChancellorRight(Chancellor.RightTypes right, Object... params) {
+        this.gameModel.getChancellor().useRight(right, params);
+    }
+
     public void finishGame(boolean result, int shadowLeaderId, ArrayList<Integer> spyesId) {
         for (HumanPlayerGameManager player : humanPlayers) 
             player.finishGame(result, shadowLeaderId, spyesId);
+    }
+
+    public void informCardRemoved(Integer card, Integer playerID) {
+        System.out.printf("Inform deleted, %d %d, %d %d", card, playerID, currentPresident, currentChancellor);
+        if (playerID == currentPresident) {
+            this.gameModel.getPresident().chooseCardToRemove(card);
+        } else if (playerID == currentChancellor) {
+            this.gameModel.getChancellor().chooseCardToRemove(card);
+        }
+    }
+
+    public void executePresidentRight(Integer playerID, President.RightTypes right, Object... parametrs) {
+        System.out.println("Controller president right asked " + right.toString());
+        if (playerID != gameModel.getPresident().getPlayer().getId())
+            return;
+        
+        Object result = this.gameModel.getPresident().useRight(right, parametrs);
+        System.out.println("Before Right switch");
+        switch (right) {
+            case ChoosingChancellor:
+                Boolean isSucces1 = (Boolean) result;
+                break;
+
+            case CheckingUpperThreeCards:
+                this.players.get(playerID).revealCards((Card[]) result);
+                break;
+            
+            case KillingPlayers:
+                if (result != null) {
+                    Integer index = (Integer) result;
+                    players.get(index).kill();
+                }
+                break;
+            
+            case RevealingRoles:
+                PlayerModel.mainRoles role = (PlayerModel.mainRoles) result;
+                if (role != PlayerModel.mainRoles.Undefined) 
+                    players.get(playerID).showRole(role);
+                break;
+            
+            case ChoosingNextPresident:
+                Boolean isSucces = (Boolean) result;
+                break;
+            
+
+            default: 
+                break;
+        }
+    }
+
+    public void executeChancellorRight(Integer playerID, Chancellor.RightTypes right, Object... parametrs) {
+        System.out.println("Controller chancellor right asked " + right.toString());
+        if (playerID == gameModel.getChancellor().getPlayer().getId())
+            this.gameModel.getChancellor().useRight(right, parametrs);
     }
 }
