@@ -1,3 +1,16 @@
 {
-    "java.configuration.updateBuildConfiguration": "interactive"
+    "java.configuration.updateBuildConfiguration": "interactive",
+
+    "java.configuration.runtimes": [
+        {
+            "name": "JavaRunner",
+            "path": "C:/Program Files/Java/jdk1.8.0_251",
+            "default": true
+        },
+        {
+            "name": "AspectJ",
+            "path": "C:/Program Files/JavaExtentions/aspectj1.9",
+            "default": false
+        }
+    ]
 }
