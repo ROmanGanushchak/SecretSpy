@@ -27,11 +27,11 @@ public class GameFinish extends Component {
     }
 
     public void setUp(boolean result, String shadowLeaderName, ArrayList<String> spyNames) {
-        if (result) {
+        if (!result) {
             this.roleWinnerImage.setImage(ImageLoader.getInstance().getImage("spyRoleCard.png"));
             resultText.setText("Spys");
         } else { 
-            this.roleWinnerImage.setImage(ImageLoader.getInstance().getImage("liberaRoleCard.png"));
+            this.roleWinnerImage.setImage(ImageLoader.getInstance().getImage("liberalRoleCard.png"));
             resultText.setText("Liberals");
         }
         

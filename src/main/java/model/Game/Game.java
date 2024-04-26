@@ -4,14 +4,16 @@ import model.Cards.*;
 import model.Cards.CardsArray.Card;
 import model.ChangebleRole.*;
 import model.Observers.ActObservers;
-import model.Observers.ActObservers.MethodToCall;
 import model.Voting.VoteObserver;
 import model.Voting.Voting;
 import GameController.GameControllerModuleService;
 
+import java.util.AbstractMap;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.EnumMap;
 import java.util.EnumSet;
+import java.util.HashSet;
 import java.util.Map;
 
 public class Game implements GamePresidentAccess {
@@ -29,6 +31,7 @@ public class Game implements GamePresidentAccess {
 
     private int randomSeed = 0;
     private ArrayList<PlayerModel> players;
+    private ArrayList<Integer> killedPlayers;
 
     private President president;
     private Chancellor chancellor;
@@ -53,7 +56,7 @@ public class Game implements GamePresidentAccess {
     private boolean isVotingActive;
 
     private EnumMap<EventTypes, Boolean> possibleEvents;
-    private EnumSet<EventTypes> requiredEventsBeforeVoting;
+    private EnumSet<EventTypes> requiredEventsBeforeCycleEnd;
     
     // if spy count == -1 game chooses automaticly
     public Game(int playersCount, GameControllerModuleService moduleProxy, int cardsCount, int spyCount) {
@@ -62,7 +65,7 @@ public class Game implements GamePresidentAccess {
 
         // cards
         if (spyCount == -1)
-            spyCount = (playersCount-5) / 2 + 1; // remake
+            spyCount = getSpyCount(playersCount); // remake
         int liberalCount = playersCount - spyCount - 1;
         if (liberalCount < 1) {
             System.out.println("Uncorrect spy count");
@@ -72,7 +75,6 @@ public class Game implements GamePresidentAccess {
 
         this.cards = new CardsArray(spyCardCount, cardsCount-spyCardCount, 3, this.randomSeed);
 
-        System.out.println("Before role");
         // role destribution
         PlayerModel.mainRoles roles[] = new PlayerModel.mainRoles[playersCount];
         for (int i=0; i<spyCount;i++) roles[i] = PlayerModel.mainRoles.Spy;
@@ -81,17 +83,19 @@ public class Game implements GamePresidentAccess {
         ArrayShaffle.shuffle(roles, 0);
 
         this.players = new ArrayList<>(playersCount);
+        this.killedPlayers = new ArrayList<>();
         for (int i=0; i<playersCount; i++) {
             this.players.add(new PlayerModel(i, roles[i]));
         }
 
-        System.out.println("Before political");
         // politicals
         this.spysInParlamentCount = 0;
         this.liberalsInParlamentCount = 0;
 
         this.president = new President((GamePresidentAccess) this);
         this.president.change(players.get(0));
+        this.president.expandPower(President.RightTypes.ChoosingChancellor, -1);
+        this.president.expandPower(President.RightTypes.FinishCycle, -1);
         
         this.president.getCardChoosedObserver().subscribe((ArrayList<Card> cards) -> this.resultPresidentChoosingCards(cards));
 
@@ -107,14 +111,15 @@ public class Game implements GamePresidentAccess {
         this.nextPresident = null;
 
         this.possibleEvents = new EnumMap<>(EventTypes.class);
-        this.requiredEventsBeforeVoting = EnumSet.noneOf(EventTypes.class);
+        this.requiredEventsBeforeCycleEnd = EnumSet.noneOf(EventTypes.class);
 
         System.out.println("Before possible events");
-        possibleEvents.put(EventTypes.PresidentSuggestChancellor, true);
         possibleEvents.put(EventTypes.KillPlayer, true);
         possibleEvents.put(EventTypes.RevealingRoles, true);
         possibleEvents.put(EventTypes.RevealeUpperCards, true);
         possibleEvents.put(EventTypes.SuggestNextPresident, true);
+        this.nextPresident = players.get(0);
+        this.resetGameCycle();
 
         System.out.print("Players roles -> ");
         for (int i=0; i<this.players.size(); i++) {
@@ -142,15 +147,14 @@ public class Game implements GamePresidentAccess {
     private void increaseSpyCount() {
         this.spysInParlamentCount++;
 
-        if (this.spysInParlamentCount == 1) this.president.expandPower(President.RightTypes.RevealingRoles, 3);
+        if (this.spysInParlamentCount == 1) this.president.expandPower(President.RightTypes.RevealingRoles, 1);
         if (this.spysInParlamentCount == 3) this.president.expandPower(President.RightTypes.CheckingUpperThreeCards, 1);
         if (this.spysInParlamentCount == 3) this.president.expandPower(President.RightTypes.ChoosingNextPresident, 1);
         if (this.spysInParlamentCount == 4) this.president.expandPower(President.RightTypes.KillingPlayers, 2);
         if (this.spysInParlamentCount == 5) this.chancellor.expandPower(Chancellor.RightTypes.VetoPower, 1);
 
-        if (this.spysInParlamentCount == this.requiredSpyCount) {
+        if (this.spysInParlamentCount == this.requiredSpyCount) 
             finishGame(false);
-        }
     }
 
     private void increaseLiberalCount() {
@@ -161,34 +165,36 @@ public class Game implements GamePresidentAccess {
     }
 
     private void addCardToBoard(Card card) {
-        if (card.state == Card.states.Spy) this.increaseSpyCount();
-        else this.increaseLiberalCount();
-        
-        this.cardAddingToBoardObservers.informAll(card);
+        if (card != null && card.state != Card.states.Undecleared) {
+            if (card.state == Card.states.Spy) this.increaseSpyCount();
+            else this.increaseLiberalCount();
+            
+            this.cardAddingToBoardObservers.informAll(card);
+        }
     }
 
-    private void resetGameCycle(Card cardToAdd) {
-        if (cardToAdd != null && cardToAdd.state != Card.states.Undecleared)
-            addCardToBoard(cardToAdd);
-
+    private void resetGameCycle() {
         this.lastPresident = this.president.getPlayer();
         if (this.chancellor != null) {
             this.lastChancellor = this.chancellor.getPlayer();
             this.chancellor.change(null);
         }
 
+        this.president.setAllRightsIsAllowed(false, new HashSet<>(new ArrayList<>(Arrays.asList(President.RightTypes.ChoosingChancellor))));
+        // this.president.setIsAllowedRightUsage(President.RightTypes.ChoosingChancellor, true);
         this.goToNextPresinent();
         possibleEvents.put(EventTypes.PresidentSuggestChancellor, true);
+        System.out.println("The right chooseChancellor " + this.president.getCurrentRights().get(President.RightTypes.ChoosingChancellor).getIsAllowed());
     }
     
     private void choosingChancellorResult(boolean result, int candidate, Map<Integer, Boolean> votes) {
         if (result == false) {
             if (++this.failedElectionsCount == 4) {
                 this.failedElectionsCount = 0;
-                this.resetGameCycle(this.cards.pop());
-            } else 
-                this.resetGameCycle(null);
-            
+                this.addCardToBoard(this.cards.pop());
+            } 
+
+            this.resetGameCycle();
             possibleEvents.put(EventTypes.PresidentSuggestChancellor, true);
             failedElectionObservers.informAll(this.failedElectionsCount);
         } else {
@@ -251,7 +257,6 @@ public class Game implements GamePresidentAccess {
     }
 
     // ---------events----------
-
     private boolean resultPresidentChoosingCards(ArrayList<Card> cards) {
         if (!this.possibleEvents.get(EventTypes.PresidentChoosingCards))
             return false;
@@ -270,16 +275,22 @@ public class Game implements GamePresidentAccess {
         this.possibleEvents.put(EventTypes.ChancellorChoosingCards, false);
         
         if (cards != null && cards.get(0) != null) 
-            this.resetGameCycle(cards.get(0));
+            this.addCardToBoard(cards.get(0));
         else 
-            this.resetGameCycle(null);
+            this.addCardToBoard(null);
+        
+        
+        this.president.setAllRightsIsAllowed(true, new HashSet<>(new ArrayList<>(Arrays.asList(President.RightTypes.ChoosingChancellor))));
+        // this.president.setIsAllowedRightUsage(President.RightTypes.ChoosingChancellor, false);
+        System.out.println("ChooseChancellor set to false by result chose chancellor");
         return true;
     }
     
     public boolean presidentSuggestChancellor(int playerID) {
+        System.out.println("Choosing chancellor in game");
         if (!this.possibleEvents.get(EventTypes.PresidentSuggestChancellor))
             return false;
-        if (!this.requiredEventsBeforeVoting.isEmpty())
+        if (!this.requiredEventsBeforeCycleEnd.isEmpty())
             return false;
         
         if (isVotingActive || this.players.get(playerID) == null) return false;
@@ -287,6 +298,8 @@ public class Game implements GamePresidentAccess {
             System.out.println("Chancellor candidate was in parlament");
             return false;
         }
+
+        System.out.println("is succesfull");
 
         ArrayList<Integer> partisipators = new ArrayList<Integer>(this.players.size());
         for (int i=0; i<this.players.size(); i++) {
@@ -316,7 +329,7 @@ public class Game implements GamePresidentAccess {
                 }
                 this.nextPresident = this.players.get(playerID);
 
-                requiredEventsBeforeVoting.remove(EventTypes.SuggestNextPresident);
+                requiredEventsBeforeCycleEnd.remove(EventTypes.SuggestNextPresident);
                 return true;
             } 
             catch (IndexOutOfBoundsException e) {
@@ -327,25 +340,28 @@ public class Game implements GamePresidentAccess {
         return false;
     }
 
-    public boolean killPlayer(int playerID) {
+    public Integer killPlayer(int playerID) {
         if (!this.possibleEvents.get(EventTypes.SuggestNextPresident))
-            return false;
-        
-        if (this.players.get(playerID) == null || playerID == this.president.getPlayer().getId()) return false;
+            return null;
+        if (this.players.get(playerID) == null || playerID == this.president.getPlayer().getId()) 
+            return null;
 
         if (this.players.get(playerID).getRole() == PlayerModel.mainRoles.ShadowLeader) 
             finishGame(true);
 
+        this.killedPlayers.add(playerID);
         this.players.set(playerID, null);
         this.playerKillingObservers.informAll(playerID);
 
-        requiredEventsBeforeVoting.remove(EventTypes.KillPlayer);
-        return true;
+        requiredEventsBeforeCycleEnd.remove(EventTypes.KillPlayer);
+        return playerID;
     }
 
     public PlayerModel.mainRoles revealePlayerRole(int playerID) {
         if (!this.possibleEvents.get(EventTypes.RevealingRoles) || this.players.get(playerID) == null)
             return PlayerModel.mainRoles.Undefined;
+        if (this.players.get(playerID).getRole() == PlayerModel.mainRoles.ShadowLeader)
+            return PlayerModel.mainRoles.Spy;
         return this.players.get(playerID).getRole();
     }
 
@@ -353,11 +369,24 @@ public class Game implements GamePresidentAccess {
         if (!this.possibleEvents.get(EventTypes.RevealeUpperCards))
             return null;
         
-        requiredEventsBeforeVoting.remove(EventTypes.RevealeUpperCards);
+        requiredEventsBeforeCycleEnd.remove(EventTypes.RevealeUpperCards);
         return this.cards.revealUpperCards(count);
     }
 
+    public boolean presidentFinishGameCycle() {
+        if (this.requiredEventsBeforeCycleEnd.isEmpty()) {
+            this.resetGameCycle();
+            return true;
+        }
+
+        return false;
+    }
+
     //--------getters----------
+    public int getSpyCount(int playerCount) {
+        return (playerCount - 5) / 2 + 1;
+    }
+
     public PlayerModel.mainRoles getRole(int playerId) {
         return this.players.get(playerId).getRole();
     }
@@ -379,8 +408,66 @@ public class Game implements GamePresidentAccess {
         return array;
     }
 
-    public PlayerModel[] getNonEligablePlayers() {
-        return new PlayerModel[]{this.lastChancellor, this.lastPresident};
+    public ArrayList<Integer> getNonEligablePlayers() {
+        ArrayList<Integer> players = new ArrayList<>();
+        players.add(president.getPlayer().getId());
+        if (lastPresident != null)
+            players.add(lastPresident.getId());
+        if (lastChancellor != null)
+            players.add(lastChancellor.getId());
+        if (chancellor.getPlayer() != null)
+            players.add(chancellor.getPlayer().getId());
+        if (nextPresident != null)
+            players.add(nextPresident.getId());
+        return players;
+    }
+
+    public ArrayList<Integer> getNonChooseblePlayers(Integer playerID, President.RightTypes right) {
+        ArrayList<Integer> forbidenPlayers = new ArrayList<>(killedPlayers);
+
+        switch (right) {
+            case ChoosingChancellor:
+                forbidenPlayers.addAll(getNonEligablePlayers());
+                forbidenPlayers.add(playerID);
+                if (nextPresident != null)
+                    forbidenPlayers.add(nextPresident.getId());
+                break;
+
+            case ChoosingNextPresident:
+                forbidenPlayers.addAll(getNonEligablePlayers());
+                forbidenPlayers.add(playerID);
+                break;
+
+            case KillingPlayers:
+            case RevealingRoles:
+                forbidenPlayers.add(playerID);
+                break;
+            
+            default: break;
+        }
+
+        return forbidenPlayers;
+    }
+
+    public ArrayList<Integer> getNonChooseblePlayers(Integer playerID, Chancellor.RightTypes right) {
+        switch (right) {
+            default:
+                return new ArrayList<>(0);
+        }
+    }
+
+    public Map.Entry<ArrayList<Integer>, Integer> getSpyes() {
+        ArrayList<Integer> spyes = new ArrayList<>();
+        Integer shadowLeader = null;
+
+        for (PlayerModel player : players) {
+            if (player.getRole() == PlayerModel.mainRoles.ShadowLeader)
+                shadowLeader = player.getId();
+            else if (player.getRole() == PlayerModel.mainRoles.Spy)
+                spyes.add(player.getId());
+        }
+        
+        return new AbstractMap.SimpleEntry<ArrayList<Integer>, Integer> (spyes, shadowLeader);
     }
 
     public ActObservers<Card> getCardAddingToBoardObservers() {

@@ -4,20 +4,26 @@
 <?import javafx.scene.image.Image?>
 <?import javafx.scene.image.ImageView?>
 <?import javafx.scene.layout.AnchorPane?>
+<?import javafx.scene.layout.VBox?>
 <?import javafx.scene.shape.Polygon?>
 
-<AnchorPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="400.0" prefWidth="600.0" styleClass="role-revealing" stylesheets="@../style.css" xmlns="http://javafx.com/javafx/13" xmlns:fx="http://javafx.com/fxml/1">
+<AnchorPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="400.0" prefWidth="600.0" styleClass="role-revealing" stylesheets="@../style.css" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1">
    <children>
-      <AnchorPane fx:id="roleImagePlane" layoutX="176.0" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="312.0" prefWidth="236.0">
+      <AnchorPane fx:id="roleImagePlane" layoutX="163.0" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="322.0" prefWidth="290.0">
          <children>
-            <ImageView fx:id="roleImage" fitHeight="320.0" fitWidth="219.0" layoutX="8.0" pickOnBounds="true" preserveRatio="true" />
+            <ImageView fx:id="roleImage" fitHeight="315.0" fitWidth="196.0" layoutX="96.0" layoutY="8.0" pickOnBounds="true" preserveRatio="true" />
+            <Label fx:id="shadowLeaderRoleField" layoutY="71.0" prefHeight="18.0" prefWidth="98.0" />
+            <Label fx:id="shadowLeaderName" layoutY="90.0" prefHeight="18.0" prefWidth="98.0" />
+            <Label fx:id="spyesRoleField" layoutY="133.0" prefHeight="18.0" prefWidth="98.0" />
+            <Label fx:id="spyNames" alignment="TOP_LEFT" layoutY="151.0" prefHeight="166.0" prefWidth="98.0" />
+            <ImageView fx:id="fullSizeRoleImage" fitHeight="333.0" fitWidth="256.0" layoutX="23.0" pickOnBounds="true" preserveRatio="true" />
          </children>
       </AnchorPane>
-      <AnchorPane fx:id="hidePane" layoutX="173.0" layoutY="-10.0" maxHeight="-Infinity" maxWidth="-Infinity" onMouseDragged="#mouseMove" onMousePressed="#mousePress" onMouseReleased="#mouseRelease" prefHeight="329.0" prefWidth="242.0" styleClass="card-hidear">
+      <AnchorPane fx:id="hidePane" layoutX="163.0" layoutY="-10.0" maxHeight="-Infinity" maxWidth="-Infinity" onMouseDragged="#mouseMove" onMousePressed="#mousePress" onMouseReleased="#mouseRelease" prefHeight="342.0" prefWidth="290.0" styleClass="card-hidear">
          <children>
-            <Polygon fill="WHITE" layoutX="97.0" layoutY="172.0" mouseTransparent="true" points="-45.4000244140625, 21.399993896484375, 92.20001220703125, 21.399993896484375, 22.79998779296875, -7.399993896484375" stroke="WHITE" strokeType="INSIDE" styleClass="triangle" />
-            <Label alignment="CENTER" layoutX="34.0" layoutY="250.0" mouseTransparent="true" prefHeight="30.0" prefWidth="174.0" styleClass="under-scroll-text" text="to check your role" />
-            <Label alignment="CENTER" layoutX="60.0" layoutY="219.0" prefHeight="30.0" prefWidth="121.0" styleClass="scroll-text" text="Move me up" />
+            <Polygon fill="WHITE" layoutX="121.0" layoutY="179.0" mouseTransparent="true" points="-45.4000244140625, 21.399993896484375, 92.20001220703125, 21.399993896484375, 22.79998779296875, -7.399993896484375" stroke="WHITE" strokeType="INSIDE" styleClass="triangle" />
+            <Label alignment="CENTER" layoutX="58.0" layoutY="250.0" mouseTransparent="true" prefHeight="30.0" prefWidth="174.0" styleClass="under-scroll-text" text="to check the role" />
+            <Label alignment="CENTER" layoutX="84.0" layoutY="220.0" prefHeight="30.0" prefWidth="121.0" styleClass="scroll-text" text="Move me up" />
          </children>
       </AnchorPane>
       <ImageView fitHeight="101.0" fitWidth="98.0" layoutX="488.0" layoutY="14.0" onMousePressed="#exitMousePressed" pickOnBounds="true" preserveRatio="true">
@@ -25,5 +31,6 @@
             <Image url="@../images/exit-button.png" />
          </image>
       </ImageView>
+      <VBox layoutX="14.0" layoutY="72.0" prefHeight="200.0" prefWidth="100.0" />
    </children>
 </AnchorPane>

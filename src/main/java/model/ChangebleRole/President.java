@@ -11,7 +11,8 @@ public class President extends Political<President.RightTypes> implements Presid
         RevealingRoles,             
         CheckingUpperThreeCards,    
         ChoosingNextPresident,      
-        KillingPlayers;
+        KillingPlayers,
+        FinishCycle;
         
         public static RightTypes get(int index) {
             if (index >= 0 && index < values().length)
@@ -35,13 +36,8 @@ public class President extends Political<President.RightTypes> implements Presid
         rights.put(RightTypes.CheckingUpperThreeCards, new CheckingUpperThreeCards(game));
         rights.put(RightTypes.ChoosingNextPresident, new ChoosingNextPresident(game));
         rights.put(RightTypes.KillingPlayers, new KillingPlayers(game));
+        rights.put(RightTypes.FinishCycle, new FinishCycle(game));
         super.initializeRights(rights);
-
-        expandPower(RightTypes.ChoosingChancellor, -1);
-        expandPower(RightTypes.CheckingUpperThreeCards, 3);
-        expandPower(RightTypes.RevealingRoles, 3);
-        expandPower(RightTypes.ChoosingNextPresident, 3);
-        expandPower(RightTypes.KillingPlayers, 3);
     }
 }
 
@@ -75,11 +71,11 @@ class RevealingRoles extends Political.Right {
         if (params.length == 1) {
             PlayerModel.mainRoles role = game.revealePlayerRole((Integer) params[0]);
             if (role == PlayerModel.mainRoles.Undefined)
-                super.increaseUseCount(1);
+                super.changeUseCount(1);
             return role;
         }
         
-        super.increaseUseCount(1);
+        super.changeUseCount(1);
         System.out.println("Uncorrect paramters count for Right");
         return null;
     }
@@ -97,7 +93,7 @@ class CheckingUpperThreeCards extends Political.Right {
         if (params.length == 0) 
             return game.revealeUpperCards(3);
         
-        super.increaseUseCount(1);
+        super.changeUseCount(1);
         System.out.println("Uncorrect paramters count for Right");
         return null;
     }
@@ -129,10 +125,29 @@ class KillingPlayers extends Political.Right {
     @Override
     public Object execute(Object... params) {
         if (params.length == 1) {
-            if (game.killPlayer((Integer) params[0]))
-                return (Integer) params[0];
+            Integer playerId = game.killPlayer((Integer) params[0]);
+            if (playerId != null)
+                return playerId;
             
-            super.increaseUseCount(1);
+            super.changeUseCount(1);
+            return null;
+        }
+        System.out.println("Uncorrect paramters count for Right");
+        return null;
+    }
+}
+
+class FinishCycle extends Political.Right {
+    private GamePresidentAccess game;
+    public FinishCycle(GamePresidentAccess game) { 
+        super(Request.None); 
+        this.game = game;
+    }
+
+    @Override
+    public Object execute(Object... params) {
+        if (params.length == 0) {
+            game.presidentFinishGameCycle();
             return null;
         }
         System.out.println("Uncorrect paramters count for Right");

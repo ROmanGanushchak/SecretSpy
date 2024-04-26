@@ -2,7 +2,6 @@ package GameController;
 
 import java.lang.reflect.Proxy;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Scanner;
@@ -10,14 +9,15 @@ import PlayerGameManager.*;
 import User.UserData;
 import model.Cards.CardsArray.Card;
 import model.ChangebleRole.Chancellor;
+import model.ChangebleRole.Political;
 import model.ChangebleRole.President;
 import model.ChangebleRole.President.RightTypes;
 import model.Game.Game;
 import model.Game.PlayerModel;
-import model.Game.PlayerModel.mainRoles;
 import model.Voting.VoteObserver;
 import model.Voting.Voting;
 import test_ui.GameVisualization;
+import test_ui.Components.PlayerPaneController.Icons;
 
 public class GameController implements GameControllerModuleService, GameControllerVisualService {
     private ArrayList<PlayerGameManager> players;
@@ -38,7 +38,7 @@ public class GameController implements GameControllerModuleService, GameControll
             players.get(currentPresident).unmakePresident();
         
         players.get(player).makePresident(this.gameModel.getPresident().getCurrentRights());
-        for (HumanPlayerGameManager humanPlayer : humanPlayers) {
+        for (PlayerGameManager humanPlayer : players) {
             humanPlayer.changePresident(currentPresident, player);
         }
 
@@ -46,10 +46,10 @@ public class GameController implements GameControllerModuleService, GameControll
     }
 
     private void makeChancellor(Integer player) {
-        if (currentPresident != -1)
-            players.get(currentPresident).unmakeChancellor();
+        if (currentChancellor != -1)
+            players.get(currentChancellor).unmakeChancellor();
 
-        for (HumanPlayerGameManager humanPlayer : humanPlayers) {
+        for (PlayerGameManager humanPlayer : players) {
             humanPlayer.changeChancellor(currentChancellor, player);
         }
         
@@ -73,26 +73,71 @@ public class GameController implements GameControllerModuleService, GameControll
 
         ArrayList<PlayerGameManager> players = new ArrayList<>(humanPlayers.size()+botsCount);
         players.addAll(humanPlayers);
-        for (int i=humanPlayers.size(); i<botsCount+humanPlayers.size(); i++) {
-            players.add(new BotPlayerGameManager(i));
+
+        this.gameModel = new Game(humanPlayers.size() + botsCount, moduleProxy, 17, -1);
+        int spyCount = this.gameModel.getSpyCount(humanPlayers.size() + botsCount);
+        Map.Entry<ArrayList<Integer>, Integer> spyes = this.gameModel.getSpyes();
+        
+        int ids[] = this.gameModel.getPlayersIds();
+
+        this.players = players;
+        this.humanPlayers = humanPlayers;
+
+        Map<Integer, UserData.VisualData> visualData = new HashMap<>();
+        for (HumanPlayerGameManager player : humanPlayers) 
+            visualData.put(player.getPlayerID(), player.getVisualData());
+        
+        for (int i=humanPlayers.size(); i < humanPlayers.size()+botsCount; i++) {
+            PlayerGameManager player;
+            if (this.gameModel.getRole(ids[i]) == PlayerModel.mainRoles.Liberal) {
+                player = new LiberalBotPlayerGameManager(ids[i], spyCount, ids);
+                player.showRole(this.gameModel.getRole(ids[i]));
+            } else { 
+                player = new SpyBotPlayerGameManager(ids[i], spyCount, ids);
+                player.showRole(this.gameModel.getRole(ids[i]), spyes.getKey(), spyes.getValue());
+            }
+            
+            players.add(player);
+            player.setProxyGameController(visualProxy);
+            visualData.put(player.getPlayerID(), player.getVisualData());
         }
 
-        this.gameModel = new Game(players.size(), moduleProxy, 17, -1);
-        
+        for (HumanPlayerGameManager player : humanPlayers) {
+            player.setProxyGameController(this.visualProxy);
+
+            player.setPlayersVisuals(visualData);
+            if (this.gameModel.getRole(player.getPlayerID()) == PlayerModel.mainRoles.Liberal)
+                player.showRole(this.gameModel.getRole(player.getPlayerID()));
+            else 
+                player.showRole(this.gameModel.getRole(player.getPlayerID()), spyes.getKey(), spyes.getValue());
+
+            player.initializeGame();
+        }
+
         this.gameModel.getPresident().getCardAddingObserver().subscribe(
-            (ArrayList<Card> cards) -> {
-                System.out.printf("Giving cards to president %d\n", currentPresident);
-                this.players.get(currentPresident).giveCardsToRemove(cards);});
+            (ArrayList<Card> cards) -> this.players.get(currentPresident).giveCardsToRemove(cards));
         
         this.gameModel.getChancellor().getCardAddingObserver().subscribe(
             (ArrayList<Card> cards) -> this.players.get(currentChancellor).giveCardsToRemove(cards));
 
-        this.gameModel.getPresident().getPlayerChangesObservers().subscribe((Integer player) -> makePresident(player));
+        this.gameModel.getPresident().getPlayerChangesObservers().subscribe((Integer player) -> {System.out.println("new President setted " + player); makePresident(player);});
         this.gameModel.getChancellor().getPlayerChangesObservers().subscribe((Integer player) -> makeChancellor(player));
+        
+        this.gameModel.getPresident().getPowerChangerObserver().subscribe(
+            (Map.Entry<President.RightTypes, Political.Right> right) -> {
+                    if (currentPresident != -1) 
+                        players.get(currentPresident).changePresidentRight(right);
+                });
+            
+        this.gameModel.getChancellor().getPowerChangerObserver().subscribe(
+            (Map.Entry<Chancellor.RightTypes, Political.Right> right) -> {
+                    if (currentChancellor != -1) 
+                        players.get(currentChancellor).changeChancellorRight(right);
+                });
 
         this.gameModel.getCardAddingToBoardObservers().subscribe(
             (Card card) -> {
-                for (HumanPlayerGameManager player : humanPlayers) {
+                for (PlayerGameManager player : players) {
                     player.addCardToBoard(card.state);
                 }
             });
@@ -103,29 +148,7 @@ public class GameController implements GameControllerModuleService, GameControll
                     player.changeFailedVotingCount(count);
                 }
             });
-        
-        
-        
-        int ids[] = this.gameModel.getPlayersIds();
 
-        this.players = players;
-        this.humanPlayers = humanPlayers;
-
-        System.out.println("Before visual data");
-        Map<Integer, UserData.VisualData> visualData = new HashMap<>();
-        for (PlayerGameManager player : players) 
-            visualData.put(player.getPlayerID(), player.getVisualData());
-
-        for (HumanPlayerGameManager player : humanPlayers) {
-            player.setProxyGameController(this.visualProxy);
-
-            player.showRole(this.gameModel.getRole(player.getPlayerID()));
-            player.setPlayersVisuals(visualData);
-
-            player.initializeGame();
-        }
-
-        // System.out.println("Before make president");
         makePresident(this.gameModel.getPresident().getPlayer().getId());
     }
 
@@ -179,7 +202,8 @@ public class GameController implements GameControllerModuleService, GameControll
                 break;
             case "kill":
                 num = scanner.nextInt();
-                this.gameModel.getPresident().useRight(President.RightTypes.KillingPlayers, num);
+                this.executePresidentRight(gameModel.getPresident().getPlayer().getId(), President.RightTypes.KillingPlayers, num);
+                // this.gameModel.getPresident().useRight(President.RightTypes.KillingPlayers, num);
                 break;
             case "killActivate":
                 this.gameModel.getPresident().expandPower(President.RightTypes.KillingPlayers, 1);
@@ -232,10 +256,6 @@ public class GameController implements GameControllerModuleService, GameControll
         // }
     }
 
-    public void executeChancellorRight(Chancellor.RightTypes right, Object... params) {
-        this.gameModel.getChancellor().useRight(right, params);
-    }
-
     public void finishGame(boolean result, int shadowLeaderId, ArrayList<Integer> spyesId) {
         for (HumanPlayerGameManager player : humanPlayers) 
             player.finishGame(result, shadowLeaderId, spyesId);
@@ -269,12 +289,18 @@ public class GameController implements GameControllerModuleService, GameControll
             case KillingPlayers:
                 if (result != null) {
                     Integer index = (Integer) result;
+                    System.out.printf("Player %d killed\n", index);
                     players.get(index).kill();
+                    for (HumanPlayerGameManager player : humanPlayers) {
+                        player.setIconPlayerPane(Icons.KILLED, index);
+                    }
                 }
                 break;
             
             case RevealingRoles:
+                System.out.println("Reveal role");
                 PlayerModel.mainRoles role = (PlayerModel.mainRoles) result;
+                System.out.println(result + " " + role);
                 if (role != PlayerModel.mainRoles.Undefined) 
                     players.get(playerID).showRole(role);
                 break;
@@ -293,5 +319,13 @@ public class GameController implements GameControllerModuleService, GameControll
         System.out.println("Controller chancellor right asked " + right.toString());
         if (playerID == gameModel.getChancellor().getPlayer().getId())
             this.gameModel.getChancellor().useRight(right, parametrs);
+    }
+
+    public ArrayList<Integer> getNonChooseblePlayers(Integer playerID, President.RightTypes right) {
+        return gameModel.getNonChooseblePlayers(playerID, right);
+    }
+
+    public ArrayList<Integer> getNonChooseblePlayers(Integer playerID, Chancellor.RightTypes right) {
+        return gameModel.getNonChooseblePlayers(playerID, right);
     }
 }

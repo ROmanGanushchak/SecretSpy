@@ -7,5 +7,6 @@ public interface GamePresidentAccess {
     public Card[] revealeUpperCards(int count);
     public boolean presidentSuggestChancellor(int playerID);
     public boolean setNextPresidentCandidate(int playerID);
-    public boolean killPlayer(int playerID);
+    public Integer killPlayer(int playerID);
+    public boolean presidentFinishGameCycle();
 }

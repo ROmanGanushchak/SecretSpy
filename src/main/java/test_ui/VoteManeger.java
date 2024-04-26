@@ -59,7 +59,6 @@ public class VoteManeger extends PopupLayerManager.PopupComponent {
 
     @Override
     public void activate() {
-        super.activate();
         TranslateTransition animation = new TranslateTransition(Duration.seconds(this.voteSurfaceAnimationTime), this.voteSurface);
         animation.setFromY(((AnchorPane) this.voteSurface.getParent()).getHeight());
         animation.setToY(0); 
@@ -71,6 +70,7 @@ public class VoteManeger extends PopupLayerManager.PopupComponent {
             this.voteSurface.setTranslateY(0);
         });
         animation.play(); 
+        super.activate();
     }
 
     public void end() {

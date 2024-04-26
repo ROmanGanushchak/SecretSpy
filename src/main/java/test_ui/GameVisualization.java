@@ -26,6 +26,7 @@ import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
+import javafx.scene.control.Label;
 import javafx.scene.control.TextField;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
@@ -79,6 +80,8 @@ public class GameVisualization { // game visualization має компонент
     private VBox playerIconHodler;
     @FXML
     private VBox rightsHolder;
+    @FXML
+    private Label chosenRight;
 
     private VoteManeger voteManeger;
 
@@ -151,7 +154,7 @@ public class GameVisualization { // game visualization має компонент
         }
     }
 
-    public void showRole(PlayerModel.mainRoles role) {
+    private Image getRoleImage(PlayerModel.mainRoles role) {
         Image cardImage;
         if (role == PlayerModel.mainRoles.Liberal)
             cardImage = new Image(App.class.getResourceAsStream("images/liberalRoleCard.png"));
@@ -161,8 +164,28 @@ public class GameVisualization { // game visualization має компонент
             cardImage = new Image(App.class.getResourceAsStream("images/shadowLeader.png"));
         else
             cardImage = new Image(App.class.getResourceAsStream("images/continue-circle.png"));
+        
+        return cardImage;
+    }
 
-        this.revealingRoleCardAnimation(cardImage);
+    public void showRole(PlayerModel.mainRoles role, ArrayList<Integer> spyes, Integer shadowLeader) {
+        Image cardImage = getRoleImage(role);
+
+        RevealeRoleController revealRole = new RevealeRoleController(this.revealeRolePane);
+        revealRole.setup(cardImage, spyes, shadowLeader, this.playersVisualData);
+        revealRole.getExitObservers().subscribe((Integer p) -> popupLayerManager.finishCurent());
+
+        popupLayerManager.askActivation(revealRole);
+    }
+
+    public void showRole(PlayerModel.mainRoles role) {
+        Image cardImage = getRoleImage(role);
+
+        RevealeRoleController revealRole = new RevealeRoleController(this.revealeRolePane);
+        revealRole.setup(cardImage);
+        revealRole.getExitObservers().subscribe((Integer p) -> popupLayerManager.finishCurent());
+
+        popupLayerManager.askActivation(revealRole);
     }
 
     public void setPlayersVisuals(Map<Integer, UserData.VisualData> playersVisualData) {
@@ -176,14 +199,6 @@ public class GameVisualization { // game visualization має компонент
             playersIcons.put(player.getKey(), playerPane);
             playerPane.getChooseButObservers().subscribe((Integer val) -> {this.playerChosenObservers.informAll(val);});
         }
-    }
-
-    public void revealingRoleCardAnimation(Image image) {
-        RevealeRoleController revealRole = new RevealeRoleController(this.revealeRolePane);
-        revealRole.setup(image);
-        revealRole.getExitObservers().subscribe((Integer p) -> popupLayerManager.finishCurent());
-
-        popupLayerManager.askActivation(revealRole);
     }
 
     public void showCardsToRemove(ArrayList<CardsArray.Card> cards) {
@@ -240,7 +255,7 @@ public class GameVisualization { // game visualization має компонент
             Integer player = vote.getKey();
 
             if (vote.getValue() == false) {
-                yesVoteNames.add(playersVisualData.get(player).getName());
+                noVoteNames.add(playersVisualData.get(player).getName());
                 playersIcons.get(player).showDislike();
             } else {
                 yesVoteNames.add(playersVisualData.get(player).getName());
@@ -252,7 +267,6 @@ public class GameVisualization { // game visualization має компонент
     }
 
     public void setIconPlayerPane(PlayerPaneController.Icons icon, int playerID) {
-        System.out.println(playerID + " " + this.playersIcons.get(playerID));
         this.playersIcons.get(playerID).showIcon(icon);
     }
 
@@ -266,17 +280,17 @@ public class GameVisualization { // game visualization має компонент
             playersIcons.get(player).lockPlayerChose();
     }
 
-    public void finishGame(boolean result, int shadowLeaderId, ArrayList<Integer> spyesID) { // false - fas, true -
-                                                                                             // liberals
-        Component.hide(onBoardPane);
+    public void finishGame(boolean result, int shadowLeaderId, ArrayList<Integer> spyesID) {
+        this.popupLayerManager.subscribeForCallWhenFree((Boolean p) -> {
+            Component.hide(onBoardPane);
+            GameFinish gameFinish = new GameFinish(gameFinishPane);
 
-        GameFinish gameFinish = new GameFinish(gameFinishPane);
+            ArrayList<String> names = new ArrayList<>(spyesID.size());
+            for (Integer spyID : spyesID)
+                names.add(this.playersVisualData.get(spyID).getName());
 
-        ArrayList<String> names = new ArrayList<>(spyesID.size());
-        for (Integer spyID : spyesID)
-            names.add(this.playersVisualData.get(spyID).getName());
-
-        gameFinish.setUp(result, this.playersVisualData.get(shadowLeaderId).getName(), names);
+            gameFinish.setUp(result, this.playersVisualData.get(shadowLeaderId).getName(), names);
+        }, 1);
     }
 
     public void showDeathMessge() {
@@ -291,56 +305,80 @@ public class GameVisualization { // game visualization має компонент
         popupLayerManager.askActivation(showDeath);
     }
 
-    public void forceToChoosePlayer(ArrayList<Integer> disanbledPlayers) {
-
-    }
-
-    public void addCardToBoard(Card.states type) { // AddSpyCardOnScreen
-        ImageView card = new ImageView();
-        card.setX(cardToAdd.getLayoutX());
-        card.setY(cardToAdd.getLayoutY());
-        card.setFitHeight(cardToAdd.getFitHeight());
-        card.setFitWidth(cardToAdd.getFitWidth());
-        card.setImage(cardToAdd.getImage());
-        onBoardPane.getChildren().add(card);
-
-        Image texture;
-        Rectangle endRec;
-        if (type == Card.states.Liberal) {
-            texture = ImageLoader.getInstance().getImage("liberalCard.png");
-            endRec = liberalBoardController.getNextSloteRectangle();
-            endRec.setX(endRec.getX() + liberalBoard.getLayoutX());
-            endRec.setY(endRec.getY() + liberalBoard.getLayoutY());
-        } else {
-            texture = ImageLoader.getInstance().getImage("spyCard.png");
-            endRec = spyBoardController.getNextSloteRectangle();
-            endRec.setX(endRec.getX() + spyBoard.getLayoutX());
-            endRec.setY(endRec.getY() + spyBoard.getLayoutY());
+    public void forceToChoosePlayer(ArrayList<Integer> forbidenPlayers) {
+        for (Integer player : forbidenPlayers) {
+            PlayerPaneController pane = playersIcons.get(player);
+            if (pane != null) 
+                pane.lockPlayerChose();
         }
 
-        Scene scene = onBoardPane.getScene();
-        Pair<Double, Double> midSize = new Pair<>(scene.getHeight() / 5, scene.getHeight() / 3);
-        Pair<Double, Double> endSize = new Pair<>(endRec.getWidth(), endRec.getHeight());
+        Component.turnOff(onBoardPane);
+        Component.turnOff(presidentRightsPane);
+    }
 
-        Pair<Double, Double> midPosition = new Pair<>(
-                scene.getWidth() / 2 - (midSize.getKey() / 2 + onBoardPane.getLayoutX()),
-                scene.getHeight() / 2 - (midSize.getValue() / 2 + onBoardPane.getLayoutY()));
+    public void finishPlayerChoose(ArrayList<Integer> forbidenPlayers) {
+        for (Integer player : forbidenPlayers) {
+            PlayerPaneController pane = playersIcons.get(player);
+            if (pane != null) 
+                pane.unlockPlayerChose();
+        }
 
-        Pair<Double, Double> endPosition = new Pair<>(endRec.getX(), endRec.getY());
+        Component.turnOn(onBoardPane);
+        Component.turnOn(presidentRightsPane);
+    }
 
-        CardAddingAnimation cardAddingAnimation = new CardAddingAnimation();
-        
-        cardAddingAnimation.getFinishObservers().subscribe(
-            (Integer val) -> {
-                if (type == Card.states.Liberal)
-                    this.liberalBoardController.showNextCard();
-                else if (type == Card.states.Spy)
-                    this.spyBoardController.showNextCard();
-                
-                onBoardPane.getChildren().remove(card);
-            }, 1);
+    public void addCardToBoard(Card.states type) {
+        this.popupLayerManager.subscribeForCallWhenFree((Boolean f) -> {
+            ImageView card = new ImageView();
+            card.setX(cardToAdd.getLayoutX());
+            card.setY(cardToAdd.getLayoutY());
+            card.setFitHeight(cardToAdd.getFitHeight());
+            card.setFitWidth(cardToAdd.getFitWidth());
+            card.setImage(cardToAdd.getImage());
+            onBoardPane.getChildren().add(card);
 
-        cardAddingAnimation.start(4.0, midPosition, endPosition, midSize, endSize, texture, card);
+            Image texture;
+            Rectangle endRec;
+            if (type == Card.states.Liberal) {
+                texture = ImageLoader.getInstance().getImage("liberalCard.png");
+                endRec = liberalBoardController.getNextSloteRectangle();
+                endRec.setX(endRec.getX() + liberalBoard.getLayoutX());
+                endRec.setY(endRec.getY() + liberalBoard.getLayoutY());
+            } else {
+                texture = ImageLoader.getInstance().getImage("spyCard.png");
+                endRec = spyBoardController.getNextSloteRectangle();
+                endRec.setX(endRec.getX() + spyBoard.getLayoutX());
+                endRec.setY(endRec.getY() + spyBoard.getLayoutY());
+            }
+
+            Scene scene = onBoardPane.getScene();
+            Pair<Double, Double> midSize = new Pair<>(scene.getHeight() / 5, scene.getHeight() / 3);
+            Pair<Double, Double> endSize = new Pair<>(endRec.getWidth(), endRec.getHeight());
+
+            Pair<Double, Double> midPosition = new Pair<>(
+                    scene.getWidth() / 2 - (midSize.getKey() / 2 + onBoardPane.getLayoutX()),
+                    scene.getHeight() / 2 - (midSize.getValue() / 2 + onBoardPane.getLayoutY()));
+
+            Pair<Double, Double> endPosition = new Pair<>(endRec.getX(), endRec.getY());
+
+            CardAddingAnimation cardAddingAnimation = new CardAddingAnimation();
+            
+            cardAddingAnimation.getFinishObservers().subscribe(
+                (Integer val) -> {
+                    if (type == Card.states.Liberal)
+                        this.liberalBoardController.showNextCard();
+                    else if (type == Card.states.Spy)
+                        this.spyBoardController.showNextCard();
+                    
+                    onBoardPane.getChildren().remove(card);
+                }, 1);
+
+            cardAddingAnimation.start(4.0, midPosition, endPosition, midSize, endSize, texture, card);
+        }, 1);
+    }
+
+    public void setChosenRight(String text) {
+        this.chosenRight.setText(text);
     }
 
     public void changeFailedVotingCount(int failedCount) {

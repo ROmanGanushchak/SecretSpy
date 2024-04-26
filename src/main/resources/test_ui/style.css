@@ -33,9 +33,26 @@
     -fx-text-fill: #EAF3EB;
 }
 
+.role-revealing .team-role-text {
+    -fx-text-alignment: center;
+    -fx-font-size: 1;
+    -fx-text-fill: #595959;
+}
+
+.role-revealing .team-role-text {
+    -fx-text-alignment: center;
+    -fx-font-size: 16;
+    -fx-text-fill: #595959;
+}
+
 .rights_field .main-lable {
     -fx-font-size: 35;
     -fx-text-fill: #595959;
+}
+
+.rights_field .chosen-right {
+    -fx-font-size: 20;
+    -fx-text-fill: #393939;
 }
 
 .ability {

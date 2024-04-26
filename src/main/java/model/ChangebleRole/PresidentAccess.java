@@ -2,6 +2,7 @@ package model.ChangebleRole;
 
 import java.util.ArrayList;
 import java.util.EnumMap;
+import java.util.Map;
 
 import model.Cards.CardsArray.Card;
 import model.ChangebleRole.President.RightTypes;
@@ -15,7 +16,7 @@ public interface PresidentAccess {
 
     public ActObserversAccess<ArrayList<Card>> getCardChoosedObserver();
     public ActObserversAccess<ArrayList<Card>> getCardAddingObserver();
-    public ActObserversAccess<RightTypes> getPowerChangerObserver();
+    public ActObserversAccess<Map.Entry<RightTypes, Political.Right>> getPowerChangerObserver();
     public ActObserversAccess<Integer> getPlayerChangesObservers();
     public Object useRight(President.RightTypes right, Object... parametrs);
     public boolean chooseCardToRemove(Integer card);

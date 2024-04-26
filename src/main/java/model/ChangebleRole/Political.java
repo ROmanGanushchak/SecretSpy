@@ -1,12 +1,15 @@
 package model.ChangebleRole;
 
+import java.util.AbstractMap;
 import java.util.ArrayList;
 import java.util.EnumMap;
+import java.util.HashSet;
+import java.util.Map;
+
 import model.Cards.CardsArray.Card;
 import model.Game.PlayerModel;
 import model.Observers.ActObservers;
 import model.Observers.ActObserversAccess;
-import model.Observers.ActObservers.MethodToCall;
 
 abstract class ChangebleRole {
     private PlayerModel player;
@@ -36,25 +39,19 @@ abstract class ChangebleRole {
 
 public abstract class Political<R extends Enum<R>> extends ChangebleRole {
     public static enum Request {
-        None(Integer.class), 
-        ChoosePlayer(Integer.class);
-
-        private Class<?> type;
-        Request(Class<?> type) {
-            this.type = type;
-        }
-
-        public Class<?> getType() {
-            return type;
-        }
+        None, ChoosePlayer
     }
 
     public static abstract class Right {
         private int useCount;
         private Request request;
+        private boolean isAllowed;
+        private ActObservers<Integer> useCountChanges;
 
         public Right(Request request) {
             this.request = request;
+            this.isAllowed = true;
+            this.useCountChanges = new ActObservers<>();
         }
 
         public int getUseCount() {
@@ -65,12 +62,45 @@ public abstract class Political<R extends Enum<R>> extends ChangebleRole {
             return this.request;
         }
 
-        protected void increaseUseCount(int value) {
-            if (useCount != -1)
-                this.useCount += value;
+        private void setUseCount(int newValue) {
+            this.useCount = newValue;
+            useCountChanges.informAll(useCount);
         }
 
-        public abstract Object execute(Object... params);
+        protected void changeUseCount(int value) {
+            if (useCount != -1) {
+                this.useCount += value;
+                useCountChanges.informAll(useCount);
+            }
+        }
+
+        public void setIsAllowed(boolean isAllowed) {
+            this.isAllowed = isAllowed;
+        }
+
+        public boolean getIsAllowed() {
+            return this.isAllowed;
+        }
+
+        public boolean isActivate() {
+            return isAllowed && (useCount != 0);
+        }
+
+        public Object tryUseRight(Object... paramters) {
+            if (!isAllowed) System.out.println("Not allowed right");
+            if (useCount == 0) System.out.println("No right usage");
+
+            if (isAllowed && useCount != 0) {
+                changeUseCount(-1);
+                
+                useCountChanges.informAll(useCount);
+                return execute(paramters);
+            }
+
+            return null;
+        }
+
+        protected abstract Object execute(Object... params);
     }
 
     private EnumMap<R, Right> currentRights; // -1 -> activated infinite count of use, 0 -> isnt activated, >=1 activated and has limited usage
@@ -79,7 +109,7 @@ public abstract class Political<R extends Enum<R>> extends ChangebleRole {
 
     private ActObservers<ArrayList<Card>> cardChoosenObservers;
     private ActObservers<ArrayList<Card>> cardAddingObservers;
-    private ActObservers<R> powerChangesObserver;
+    private ActObservers<Map.Entry<R, Right>> powerChangesObserver;
 
     public Political(int cardsCount) {
         this.cardsCount = cardsCount;
@@ -91,15 +121,20 @@ public abstract class Political<R extends Enum<R>> extends ChangebleRole {
 
     protected void initializeRights(EnumMap<R, Right> rights) {
         this.currentRights = rights;
+        for (Map.Entry<R, Right> right : rights.entrySet()) {
+            final R rightType = right.getKey();
+            right.getValue().useCountChanges.subscribe( (Integer count) -> 
+                this.powerChangesObserver.informAll(new AbstractMap.SimpleEntry<R,Right>(rightType, currentRights.get(rightType))));
+        }
     }
 
-    public Object useRight(R right, Object... parametrs) {
-        return currentRights.get(right).execute(parametrs);
+    public Object useRight(R rightType, Object... parametrs) {
+        System.out.println("Try to use right " + rightType.toString() + " " + currentRights.get(rightType).getIsAllowed());
+
+        return currentRights.get(rightType).tryUseRight(parametrs);
     }
 
     public void giveCards(ArrayList<Card> cards) {
-        System.out.println("Cards where given to political " + cards.size());
-
         if (cards.size() != this.cardsCount)
             System.out.println("Uncorrect cards count");
         else if (this.cards != null) {
@@ -112,8 +147,6 @@ public abstract class Political<R extends Enum<R>> extends ChangebleRole {
 
     // if card is null then removes all cards
     public boolean chooseCardToRemove(Integer card) {
-        System.out.println("Card was removed");
-
         if (this.cards == null) return false;
         if (card == null) {
             this.cards = null;
@@ -130,39 +163,25 @@ public abstract class Political<R extends Enum<R>> extends ChangebleRole {
     }
 
     public void expandPower(R newRight, int maxUsageCount) {
-        this.currentRights.get(newRight).useCount = maxUsageCount;
-        this.powerChangesObserver.informAll(newRight);
+        this.currentRights.get(newRight).setUseCount(maxUsageCount);
+        this.powerChangesObserver.informAll(new AbstractMap.SimpleEntry<>(newRight, this.currentRights.get(newRight)));
     }
 
     public void lowerPower(R newRight) {
-        this.currentRights.get(newRight).useCount = 0;
-        this.powerChangesObserver.informAll(newRight);
+        this.currentRights.get(newRight).setUseCount(0);
+        this.powerChangesObserver.informAll(new AbstractMap.SimpleEntry<>(newRight, this.currentRights.get(newRight)));
     }
 
     public boolean isRightActivated(R right) {
-        return this.currentRights.get(right).useCount != 0;
+        return this.currentRights.get(right).isActivate();
     }
 
     public int getRemainedRightUsage(R right) {
-        return this.currentRights.get(right).useCount;
+        return this.currentRights.get(right).getUseCount();
     }
 
     public void increaseRightUsage(R right, int increasment) {
-        if (this.currentRights.get(right).useCount != -1) {
-            currentRights.get(right).useCount = increasment + currentRights.get(right).useCount;
-            this.powerChangesObserver.informAll(right);
-        }
-    }
-
-    protected boolean tryUseRight(R right) {
-        if (this.isRightActivated(right)) {
-            if (this.currentRights.get(right).useCount != -1 && this.currentRights.get(right).useCount != 0)
-                this.currentRights.get(right).useCount--;
-            
-            this.powerChangesObserver.informAll(right);
-            return true;
-        }
-        return false;
+        currentRights.get(right).changeUseCount(increasment);
     }
 
     public ActObserversAccess<ArrayList<Card>> getCardChoosedObserver() {
@@ -173,7 +192,7 @@ public abstract class Political<R extends Enum<R>> extends ChangebleRole {
         return this.cardAddingObservers;
     }
 
-    public ActObserversAccess<R> getPowerChangerObserver() {
+    public ActObserversAccess<Map.Entry<R, Right>> getPowerChangerObserver() {
         return this.powerChangesObserver;
     }
 
@@ -185,9 +204,33 @@ public abstract class Political<R extends Enum<R>> extends ChangebleRole {
         return this.cards != null;
     }
 
-    public <T> boolean subscribeForCall(R right, MethodToCall<T> method) {
-        
+    public void setIsAllowedRightUsage(R right, boolean isAllowed) {
+        if (this.currentRights.get(right).getIsAllowed() != isAllowed) {
+            this.currentRights.get(right).setIsAllowed(isAllowed);
+            powerChangesObserver.informAll(new AbstractMap.SimpleEntry<R, Right>(right, currentRights.get(right)));
+            System.out.println(right.toString() + " " + isAllowed);
+        }
+    }
 
-        return true;
+    public void setAllRightsIsAllowed(boolean isAllowed, HashSet<R> exceptions) {
+        for (R exeption : exceptions) {
+            Right right = currentRights.get(exeption);
+            if (right.getIsAllowed() != !isAllowed) {
+                right.setIsAllowed(!isAllowed);
+                powerChangesObserver.informAll(new AbstractMap.SimpleEntry<R, Right>(exeption, right));
+                System.out.println(exeption.toString() + " " + !isAllowed);
+            }
+        }
+
+        for (Map.Entry<R, Right> right : currentRights.entrySet()) {
+            if (exceptions.contains(right.getKey()))
+                continue;
+
+            if (right.getValue().getIsAllowed() != isAllowed) {
+                right.getValue().setIsAllowed(isAllowed);
+                powerChangesObserver.informAll(new AbstractMap.SimpleEntry<R, Right>(right.getKey(), right.getValue()));
+                System.out.println(right.getKey().toString() + " " + isAllowed);
+            }
+        }
     }
 }

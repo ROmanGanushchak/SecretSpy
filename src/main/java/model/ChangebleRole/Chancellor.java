@@ -22,6 +22,7 @@ public class Chancellor extends Political<Chancellor.RightTypes> implements Chan
         rights.put(RightTypes.VetoPower, vetoPowerRight);
 
         super.initializeRights(rights);
+        // super.expandPower(RightTypes.VetoPower, 3);
     }
 }
 

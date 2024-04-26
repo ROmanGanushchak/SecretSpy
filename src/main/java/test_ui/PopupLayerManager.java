@@ -4,6 +4,7 @@ import java.util.LinkedList;
 import java.util.Queue;
 import javafx.scene.Parent;
 import javafx.scene.layout.Pane;
+import model.Observers.ActObservers;
 import test_ui.Components.Component.Component;
 import test_ui.Components.Component.ParentUpdaters.PaneParentUpdater;
 
@@ -19,29 +20,30 @@ public class PopupLayerManager {
             super.hide();
         }
 
-        public void activate() {
+        protected void activate() {
             super.reveal();
         }
 
-        public void finish() {
+        protected void finish() {
             super.hide();
         }
     }
 
     private Queue<PopupComponent> componentsToActivate;
     private PopupComponent currentComponent;
+    private ActObservers<Boolean> callWhenNoPopup; 
 
     private Pane popupSurface;
     public PopupLayerManager(Pane popupSurface) {
         componentsToActivate = new LinkedList<>();
+        callWhenNoPopup = new ActObservers<>();
+
         this.popupSurface = popupSurface;
         Component.hide(popupSurface);
     }
 
     public void askActivation(PopupComponent component) {
-        System.out.println("Activation asked");
         if (currentComponent == null) {
-            System.out.println("new activation");
             Component.reveal(popupSurface);
             component.activate();
             currentComponent = component;
@@ -51,21 +53,40 @@ public class PopupLayerManager {
     }
 
     public void finishCurent() {
-        System.out.println("Finished");
         currentComponent.finish();
 
         currentComponent = componentsToActivate.poll();
         if (currentComponent != null) 
             currentComponent.activate();
-        else
+        else {
+            callWhenNoPopup.informAll(null);
             Component.hide(popupSurface);
+            currentComponent = null;
+        }
     }
 
     public void finishAll() {
         componentsToActivate.clear();
         currentComponent.finish();
         currentComponent = null;
+        callWhenNoPopup.informAll(null);
+
         Component.hide(popupSurface);
+    }
+
+    public boolean isActive() {
+        return currentComponent == null;
+    }
+
+    public void subscribeForCallWhenFree(ActObservers.MethodToCall<Boolean> methodToCall, int callCount) {
+        if (currentComponent == null && callCount == 1) {
+            methodToCall.execute(null);
+        } else if (currentComponent == null) {
+            methodToCall.execute(null);
+            callWhenNoPopup.subscribe(methodToCall, callCount-1);
+        } else {
+            callWhenNoPopup.subscribe(methodToCall, callCount);
+        }
     }
 }
 

@@ -1,6 +1,11 @@
 package test_ui.Components;
 
+import java.util.ArrayList;
+import java.util.Map;
+
+import User.UserData;
 import javafx.fxml.FXML;
+import javafx.scene.control.Label;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.input.MouseEvent;
@@ -17,7 +22,19 @@ public class RevealeRoleController extends PopupLayerManager.PopupComponent {
     @FXML
     private ImageView roleImage;
     @FXML
+    private ImageView fullSizeRoleImage;
+    @FXML
     private AnchorPane roleImagePlane;
+
+    @FXML
+    private Label shadowLeaderName;
+    @FXML
+    private Label shadowLeaderRoleField;
+
+    @FXML
+    private Label spyNames;
+    @FXML
+    private Label spyesRoleField;
 
     private double initialOffSetY;
     private double startingPosition;
@@ -58,6 +75,25 @@ public class RevealeRoleController extends PopupLayerManager.PopupComponent {
     }
 
     public void setup(Image roleImage) {
+        // this.roleImage.setImage(roleImage);
+        this.fullSizeRoleImage.setImage(roleImage);
+        shadowLeaderName.setText("");
+        shadowLeaderRoleField.setText("");
+        spyNames.setText("");
+        spyesRoleField.setText("");
+    }
+
+    public void setup(Image roleImage, ArrayList<Integer> players, Integer uniqePlayer, Map<Integer, UserData.VisualData> visualData) {
+        this.fullSizeRoleImage.setImage(null);
         this.roleImage.setImage(roleImage);
+        shadowLeaderRoleField.setText("ShadowLeader:");
+        shadowLeaderName.setText((visualData.get(uniqePlayer) != null) ? visualData.get(uniqePlayer).getName() : "None");
+        spyesRoleField.setText("Spyes:");
+        String text = new String();
+        for (Integer id : players) {
+            if (visualData.get(id) != null) 
+                text += visualData.get(id).getName() + "\n";
+        }
+        spyNames.setText(text);
     }
 }
