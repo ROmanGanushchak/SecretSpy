@@ -168,7 +168,6 @@ public class AbilityController extends Component {
 
     @FXML
     void usePressed(MouseEvent event) {
-        System.out.println("Use pressed");
         useButtonObservers.informAll(value);
     }
 

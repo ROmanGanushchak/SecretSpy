@@ -21,7 +21,7 @@ public class App extends Application {
         ArrayList<HumanPlayerGameManager> players = new ArrayList<>();
         players.add(player);
 
-        this.gameController = new GameController(players, 9);
+        this.gameController = new GameController(players, 3);
 
         stage.setScene(player.getScene());
         stage.setMinWidth(1100);

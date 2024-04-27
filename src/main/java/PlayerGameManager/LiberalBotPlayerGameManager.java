@@ -17,7 +17,8 @@ import model.Cards.CardsArray.Card;
 import model.ChangebleRole.Chancellor;
 import model.ChangebleRole.President;
 import model.Game.PlayerModel;
-import model.ChangebleRole.Political;
+import model.ChangebleRole.Right.ExecutionStatusWrapper;
+import model.ChangebleRole.Right;
 
 public class LiberalBotPlayerGameManager implements PlayerGameManager {
     private GameControllerVisualService gameController;
@@ -37,8 +38,8 @@ public class LiberalBotPlayerGameManager implements PlayerGameManager {
 
     private int playerCount;
 
-    EnumMap<President.RightTypes, Political.Right> presidentRights;
-    EnumMap<Chancellor.RightTypes, Political.Right> chancellorRights;
+    EnumMap<President.RightTypes, Right> presidentRights;
+    EnumMap<Chancellor.RightTypes, Right> chancellorRights;
 
     public LiberalBotPlayerGameManager(int id, int spyesCount, int[] playerIDs) {
         this.userData = new UserData(id, Integer.toString(id), "defaultPlayerImage.png");
@@ -64,14 +65,6 @@ public class LiberalBotPlayerGameManager implements PlayerGameManager {
     }
 
     public void voteForChancellor(Voting voting, int presidentID, int chancellorID) {
-        if (role == CurrentRoles.President) {
-            System.out.println("In president voting");
-            for (Double chance : spyChances.values()) {
-                System.out.println(chance + " ");
-            }
-        }
-
-        // System.out.println("Chances " + spyChances.get(chancellorID) + " " + avarangeSpyPercent);
         if (spyChances.get(chancellorID) >= avarangeSpyPercent + 0.15 + rand.nextInt(3) / 10.0) {
             voting.vote(userData.getID(), false);
         } else 
@@ -84,7 +77,6 @@ public class LiberalBotPlayerGameManager implements PlayerGameManager {
         else if (type == Card.states.Spy)
             this.currentSpyCardCount++;
         
-        System.out.println("Ids -> " + presidentID + " " + chancellorID);
         percentSum -= this.spyChances.get(presidentID) + this.spyChances.get(chancellorID);
         if (type == Card.states.Spy) {
             this.spyChances.put(presidentID, this.spyChances.get(presidentID) + 0.5 - this.spyChances.get(presidentID) * 0.5); 
@@ -98,17 +90,13 @@ public class LiberalBotPlayerGameManager implements PlayerGameManager {
         avarangeSpyPercent = percentSum / (double) playerCount;
     }
 
-    public void makePresident(EnumMap<President.RightTypes, Political.Right> rights) {
-        System.out.println("Liberal is president");
+    public void makePresident(EnumMap<President.RightTypes, Right> rights) {
         role = CurrentRoles.President;
 
         // choosing chancellor
         double minSpyChance = Double.MAX_VALUE;
         int minSpyChanceIndex = -1;
         HashSet<Integer> forbiden = new HashSet<Integer>(this.gameController.getNonChooseblePlayers(userData.getID(), President.RightTypes.ChoosingChancellor));
-        for (Integer forbidenElem : forbiden) {
-            System.out.println("Forvide " + forbidenElem);
-        }
 
         for (Map.Entry<Integer, Double> spyChance : spyChances.entrySet()) {
             if (!forbiden.contains(spyChance.getKey()) && spyChance.getValue() < minSpyChance) {
@@ -119,16 +107,14 @@ public class LiberalBotPlayerGameManager implements PlayerGameManager {
 
         final int resultIndex = minSpyChanceIndex;
         Timeline delay = new Timeline(new KeyFrame(
-            Duration.seconds(5),
+            Duration.seconds(1),
             ae -> {
-                System.out.println("ChooseChancellor called " + resultIndex);
                 gameController.executePresidentRight(userData.getID(), President.RightTypes.ChoosingChancellor, Math.max(resultIndex, 0));
                 gameController.executePresidentRight(userData.getID(), President.RightTypes.FinishCycle);
             }
         ));
         delay.play();
         this.presidentRights = rights;
-        System.out.println("ROLE -> " + role);
     }
 
     public void unmakePresident() {
@@ -139,15 +125,14 @@ public class LiberalBotPlayerGameManager implements PlayerGameManager {
         presidentID = newPresident;
     }
 
-    public void makeChancellor(EnumMap<Chancellor.RightTypes, Political.Right> rights) {
-        System.out.println("Make cancellor " + userData.getID());
+    public void makeChancellor(EnumMap<Chancellor.RightTypes, Right> rights) {
         role = CurrentRoles.Chancellor;
         this.chancellorRights = rights;
     }
 
     public void unmakeChancellor() {
-        System.out.println("Uncmake cancellor " + userData.getID());
         role = CurrentRoles.None;
+        System.out.println("Lberal unmade president");
     }
 
     public void changeChancellor(Integer oldChancellor, Integer newChancellor) {
@@ -155,8 +140,7 @@ public class LiberalBotPlayerGameManager implements PlayerGameManager {
     }
 
     public void giveCardsToRemove(ArrayList<CardsArray.Card> cards) {
-        System.out.println("Cards gave to remove");
-        System.out.println("ROLE -> " + role);
+        System.out.println("Liberal got cards");
 
         if (role == CurrentRoles.President) {
             for (int i=0; i<cards.size(); i++) {
@@ -217,10 +201,10 @@ public class LiberalBotPlayerGameManager implements PlayerGameManager {
         return userData.getID();
     }
 
-    public void changePresidentRight(Map.Entry<President.RightTypes, Political.Right> right) {
+    public void changePresidentRight(Map.Entry<President.RightTypes, Right> right) {
         if (right.getKey() == President.RightTypes.FinishCycle && this.role == CurrentRoles.President && presidentRights.get(President.RightTypes.FinishCycle).isActivate()) {
             Timeline delay = new Timeline(new KeyFrame(
-                Duration.seconds(5),
+                Duration.seconds(1),
                 ae -> {
                     gameController.executePresidentRight(userData.getID(), President.RightTypes.FinishCycle);
                 }
@@ -228,5 +212,10 @@ public class LiberalBotPlayerGameManager implements PlayerGameManager {
             delay.play();
         }
     }
-    public void changeChancellorRight(Map.Entry<Chancellor.RightTypes, Political.Right> right) {}
+    public void changeChancellorRight(Map.Entry<Chancellor.RightTypes, Right> right) {}
+
+    public void informPresidentRightUsage(President.RightTypes right, ExecutionStatusWrapper status) {}
+    public void informChancellorRightUsage(Chancellor.RightTypes right, ExecutionStatusWrapper status) {
+
+    }
 }

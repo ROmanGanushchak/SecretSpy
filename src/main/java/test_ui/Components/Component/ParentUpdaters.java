@@ -29,7 +29,6 @@ public class ParentUpdaters {
         }
     
         public void reveal() {
-            System.out.println("Pane revealed");
             Component.reveal(super.getBase());
         }
     }

@@ -34,15 +34,12 @@ public class Voting {
             outcome += (vote ? 1 : 0) * 2 - 1;
         }
 
-        System.out.println("the voting ended, the result " + outcome);
-
         if (outcome > 0)
             return true;
         return false;
     }
 
     private void informTheResult() {
-        System.out.println("Voting ending");
         boolean result = determineTheResult(this.votes);
         for (VoteObserver observer : observersOfEnding.getFollowers()) {
             observer.inform(result, this.candidate, this.votes);
@@ -54,7 +51,6 @@ public class Voting {
     }
 
     public void vote(int player, boolean vote) {
-        System.out.println(player + " Voted");
         if (!this.participators.contains(player)) {
             System.out.println("Trying to vote from member not in group");
             return;

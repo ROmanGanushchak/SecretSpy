@@ -1,9 +1,9 @@
 package model.ChangebleRole;
 
 import java.util.EnumMap;
-import model.ChangebleRole.Political.Request;
 import model.Game.GamePresidentAccess;
 import model.Game.PlayerModel;
+import model.ChangebleRole.Right;
 
 public class President extends Political<President.RightTypes> implements PresidentAccess {
     public static enum RightTypes {
@@ -41,7 +41,7 @@ public class President extends Political<President.RightTypes> implements Presid
     }
 }
 
-class ChoosingChancellorRight extends Political.Right {
+class ChoosingChancellorRight extends Right {
     private GamePresidentAccess game;
     public ChoosingChancellorRight(GamePresidentAccess game) { 
         super(Request.ChoosePlayer); 
@@ -49,16 +49,16 @@ class ChoosingChancellorRight extends Political.Right {
     }
 
     @Override
-    public Object execute(Object... params) {
-        System.out.println("For Choosing chanceelor count " + params.length);
+    public Object execute(ExecutionStatusWrapper executionResult, Object... params) {
         if (params.length == 1) 
-            return game.presidentSuggestChancellor((Integer) params[0]);
-        System.out.println("Uncorrect paramters count for Right");
+            game.presidentSuggestChancellor(executionResult, (Integer) params[0]);
+        else 
+            executionResult.status = ExecutionStatus.NotChosenPlayer;
         return null;
     }
 }
 
-class RevealingRoles extends Political.Right {
+class RevealingRoles extends Right {
     private GamePresidentAccess game;
 
     public RevealingRoles(GamePresidentAccess game) { 
@@ -67,21 +67,16 @@ class RevealingRoles extends Political.Right {
     }
 
     @Override
-    public Object execute(Object... params) {
-        if (params.length == 1) {
-            PlayerModel.mainRoles role = game.revealePlayerRole((Integer) params[0]);
-            if (role == PlayerModel.mainRoles.Undefined)
-                super.changeUseCount(1);
-            return role;
-        }
+    public Object execute(ExecutionStatusWrapper executionResult, Object... params) {
+        if (params.length == 1) 
+            return game.revealePlayerRole(executionResult, (Integer) params[0]);
         
-        super.changeUseCount(1);
-        System.out.println("Uncorrect paramters count for Right");
+        executionResult.status = ExecutionStatus.NotChosenPlayer;
         return null;
     }
 }
 
-class CheckingUpperThreeCards extends Political.Right {
+class CheckingUpperThreeCards extends Right {
     private GamePresidentAccess game;
     public CheckingUpperThreeCards(GamePresidentAccess game) { 
         super(Request.None); 
@@ -89,17 +84,16 @@ class CheckingUpperThreeCards extends Political.Right {
     }
 
     @Override
-    public Object execute(Object... params) {
+    public Object execute(ExecutionStatusWrapper executionResult, Object... params) {
         if (params.length == 0) 
-            return game.revealeUpperCards(3);
+            return game.revealeUpperCards(executionResult, 3);
         
-        super.changeUseCount(1);
-        System.out.println("Uncorrect paramters count for Right");
+        executionResult.status = ExecutionStatus.UnexpectedError;
         return null;
     }
 }
 
-class ChoosingNextPresident extends Political.Right {
+class ChoosingNextPresident extends Right {
     private GamePresidentAccess game;
     public ChoosingNextPresident(GamePresidentAccess game) { 
         super(Request.ChoosePlayer); 
@@ -107,15 +101,16 @@ class ChoosingNextPresident extends Political.Right {
     }
 
     @Override
-    public Object execute(Object... params) {
+    public Object execute(ExecutionStatusWrapper executionResult, Object... params) {
         if (params.length == 1) 
-            return game.setNextPresidentCandidate((Integer) params[0]);
-        System.out.println("Uncorrect paramters count for Right");
+            game.setNextPresidentCandidate(executionResult, (Integer) params[0]);
+        else 
+            executionResult.status = ExecutionStatus.NotChosenPlayer;
         return null;
     }
 }
 
-class KillingPlayers extends Political.Right {
+class KillingPlayers extends Right {
     private GamePresidentAccess game;
     public KillingPlayers(GamePresidentAccess game) { 
         super(Request.ChoosePlayer); 
@@ -123,21 +118,16 @@ class KillingPlayers extends Political.Right {
     }
 
     @Override
-    public Object execute(Object... params) {
-        if (params.length == 1) {
-            Integer playerId = game.killPlayer((Integer) params[0]);
-            if (playerId != null)
-                return playerId;
-            
-            super.changeUseCount(1);
-            return null;
-        }
-        System.out.println("Uncorrect paramters count for Right");
+    public Object execute(ExecutionStatusWrapper executionResult, Object... params) {
+        if (params.length == 1) 
+            return game.killPlayer(executionResult, (Integer) params[0]);
+        
+        executionResult.status = ExecutionStatus.NotChosenPlayer;
         return null;
     }
 }
 
-class FinishCycle extends Political.Right {
+class FinishCycle extends Right {
     private GamePresidentAccess game;
     public FinishCycle(GamePresidentAccess game) { 
         super(Request.None); 
@@ -145,32 +135,11 @@ class FinishCycle extends Political.Right {
     }
 
     @Override
-    public Object execute(Object... params) {
-        if (params.length == 0) {
-            game.presidentFinishGameCycle();
-            return null;
-        }
-        System.out.println("Uncorrect paramters count for Right");
+    public Object execute(ExecutionStatusWrapper executionResult, Object... params) {
+        if (params.length == 0)
+            game.presidentFinishGameCycle(executionResult);
+        else 
+            executionResult.status = ExecutionStatus.UnexpectedError;
         return null;
     }
 }
-
-
-/*private static Map<rights, Method> methodTypeToName;
-    static {
-        try {
-            methodTypeToName = Map.of(
-                rights.RevealingRoles, President.class.getMethod("revealTheRole", new Class<?>[]{PlayerData.class})
-            );
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-    }
-    
-    public void request(rights method, Object... parametrs) {
-        try {
-            methodTypeToName.get(method).invoke(this, parametrs);
-        } catch (Exception e) {
-            System.err.println("The invoked method in request threw an exception: " + e.getMessage());
-        }
-    }*/

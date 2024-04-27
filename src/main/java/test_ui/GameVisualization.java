@@ -2,6 +2,10 @@ package test_ui;
 
 import model.Cards.CardsArray;
 import model.Cards.CardsArray.Card;
+import model.ChangebleRole.Chancellor;
+import model.ChangebleRole.President;
+import model.ChangebleRole.Right;
+import model.ChangebleRole.Right.ExecutionStatusWrapper;
 import model.Game.PlayerModel;
 import model.Observers.ActObservers;
 import model.Observers.ActObserversAccess;
@@ -20,7 +24,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
-
 import javafx.animation.PauseTransition;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
@@ -58,6 +61,8 @@ public class GameVisualization { // game visualization має компонент
     private Button comandExcut;
     @FXML
     private TextField comandLine;
+    @FXML
+    private Label logeField;
 
     @FXML
     private AnchorPane liberalBoard;
@@ -80,8 +85,6 @@ public class GameVisualization { // game visualization має компонент
     private VBox playerIconHodler;
     @FXML
     private VBox rightsHolder;
-    @FXML
-    private Label chosenRight;
 
     private VoteManeger voteManeger;
 
@@ -97,6 +100,8 @@ public class GameVisualization { // game visualization має компонент
 
     private Map<Integer, UserData.VisualData> playersVisualData;
     private Map<Integer, PlayerPaneController> playersIcons;
+
+    private CardRemovalController cardRemovalController;
 
     @FXML
     void executComand(ActionEvent event) {
@@ -148,6 +153,7 @@ public class GameVisualization { // game visualization має компонент
                 });
             
             this.playerChosenObservers = new ActObservers<>();
+            this.cardRemovalController = new CardRemovalController(this.cardRemovingPane);
         } catch (Exception e) {
             System.out.println("unsuccesfull initilize of main controller");
             e.printStackTrace();
@@ -202,23 +208,38 @@ public class GameVisualization { // game visualization має компонент
     }
 
     public void showCardsToRemove(ArrayList<CardsArray.Card> cards) {
-        CardRemovalController cardRemovalController = new CardRemovalController(this.cardRemovingPane);
-
         PauseTransition pause = new PauseTransition(Duration.seconds(0.5));
+        final ActObservers.MethodToCall<Integer> method = (Integer index) -> {
+            this.cardRemovalChooseObservers.informAll(index);
+            pause.play();
+        };
+
         pause.setOnFinished(e -> {
             Component.reveal(onBoardPane);
+            cardRemovalController.diactivateVetoUsage();
+            cardRemovalController.getCardSlotePressed().unsubscribe(method);
+            cardRemovalController.getVetoPowerPressed().unsubscribe(method);
             popupLayerManager.finishCurent();
         });
 
         cardRemovalController.setup(cards);
-        cardRemovalController.getCardSlotePressed().subscribe(
-            (Integer index) -> {
-                this.cardRemovalChooseObservers.informAll(index);
-                pause.play();
-            });
+        cardRemovalController.getCardSlotePressed().subscribe(method);
+        cardRemovalController.getVetoPowerPressed().subscribe(method);
 
         Component.hide(onBoardPane);
         popupLayerManager.askActivation(cardRemovalController);
+    }
+
+    public void activateVetoPower(Integer informValue) {
+        cardRemovalController.activateVetoUsage(informValue);
+    }
+
+    public void diactivateVetoPower() {
+        cardRemovalController.diactivateVetoUsage();
+    }
+
+    public ActObserversAccess<Integer> getVetoPowerPressed() {
+        return this.cardRemovalController.getVetoPowerPressed();
     }
 
     public void setGameContrlProxy(GameControllerVisualService gameContrlProxy) {
@@ -327,6 +348,14 @@ public class GameVisualization { // game visualization має компонент
         Component.turnOn(presidentRightsPane);
     }
 
+    public void informPresidentRightUsage(President.RightTypes right, ExecutionStatusWrapper status) {
+        logeField.setText("The president right " + right.toString() + " " + Right.execaptionStatusText.get(status.status));
+    }
+
+    public void informChancellorRightUsage(Chancellor.RightTypes right, ExecutionStatusWrapper status) {
+        logeField.setText("The chancellor right " + right.toString() + " " + Right.execaptionStatusText.get(status.status));
+    }
+
     public void addCardToBoard(Card.states type) {
         this.popupLayerManager.subscribeForCallWhenFree((Boolean f) -> {
             ImageView card = new ImageView();
@@ -375,10 +404,6 @@ public class GameVisualization { // game visualization має компонент
 
             cardAddingAnimation.start(4.0, midPosition, endPosition, midSize, endSize, texture, card);
         }, 1);
-    }
-
-    public void setChosenRight(String text) {
-        this.chosenRight.setText(text);
     }
 
     public void changeFailedVotingCount(int failedCount) {

@@ -1,7 +1,6 @@
 package PlayerGameManager;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.EnumMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -15,7 +14,8 @@ import javafx.util.Duration;
 import model.Cards.CardsArray;
 import model.Cards.CardsArray.Card;
 import model.ChangebleRole.Chancellor;
-import model.ChangebleRole.Political;
+import model.ChangebleRole.Right;
+import model.ChangebleRole.Right.ExecutionStatusWrapper;
 import model.ChangebleRole.President;
 import model.Game.PlayerModel;
 import model.Voting.Voting;
@@ -40,8 +40,8 @@ public class SpyBotPlayerGameManager implements PlayerGameManager {
     private HashSet<Integer> playersID;
     private Integer shadowLedear;
 
-    EnumMap<President.RightTypes, Political.Right> presidentRights;
-    EnumMap<Chancellor.RightTypes, Political.Right> chancellorRights;
+    EnumMap<President.RightTypes, Right> presidentRights;
+    EnumMap<Chancellor.RightTypes, Right> chancellorRights;
 
     public SpyBotPlayerGameManager(int id, int spyesCount, int[] playerIDs) {
         this.userData = new UserData(id, Integer.toString(id), "defaultPlayerImage.png");
@@ -75,8 +75,7 @@ public class SpyBotPlayerGameManager implements PlayerGameManager {
             this.currentSpyCardCount++;
     }
 
-    public void makePresident(EnumMap<President.RightTypes, Political.Right> rights) {
-        System.out.println("Spy is president");
+    public void makePresident(EnumMap<President.RightTypes, Right> rights) {
         role = CurrentRoles.President;
 
         HashSet<Integer> forbidenPlayers = new HashSet<>(gameController.getNonChooseblePlayers(userData.getID(), President.RightTypes.ChoosingChancellor));
@@ -108,11 +107,9 @@ public class SpyBotPlayerGameManager implements PlayerGameManager {
                 }
             }
         }
-
-        System.out.println("Player to choose " + playerToChoose);
         final Integer resultIndex = playerToChoose;
         Timeline delay = new Timeline(new KeyFrame(
-            Duration.seconds(5),
+            Duration.seconds(1),
             ae -> {
                 gameController.executePresidentRight(userData.getID(), President.RightTypes.ChoosingChancellor, Math.max(resultIndex, 0));
             }
@@ -123,13 +120,14 @@ public class SpyBotPlayerGameManager implements PlayerGameManager {
 
     public void unmakePresident() {
         role = CurrentRoles.None;
+        System.out.println("Spy unmade president");
     }
 
     public void changePresident(Integer oldPresident, Integer newPresident) {
         presidentID = newPresident;
     }
 
-    public void makeChancellor(EnumMap<Chancellor.RightTypes, Political.Right> rights) {
+    public void makeChancellor(EnumMap<Chancellor.RightTypes, Right> rights) {
         role = CurrentRoles.Chancellor;
         this.chancellorRights = rights;
     }
@@ -143,6 +141,8 @@ public class SpyBotPlayerGameManager implements PlayerGameManager {
     }
 
     public void giveCardsToRemove(ArrayList<CardsArray.Card> cards) {
+        System.out.println("Spy got cards");
+
         if (role == CurrentRoles.President) {
             for (int i=0; i<cards.size(); i++) {
                 if (cards.get(i).state == Card.states.Liberal) {
@@ -195,10 +195,10 @@ public class SpyBotPlayerGameManager implements PlayerGameManager {
         return userData.getID();
     }
 
-    public void changePresidentRight(Map.Entry<President.RightTypes, Political.Right> right) {
+    public void changePresidentRight(Map.Entry<President.RightTypes, Right> right) {
         if (right.getKey() == President.RightTypes.FinishCycle && this.role == CurrentRoles.President && presidentRights.get(President.RightTypes.FinishCycle).isActivate()) {
             Timeline delay = new Timeline(new KeyFrame(
-                Duration.seconds(5),
+                Duration.seconds(1),
                 ae -> {
                     gameController.executePresidentRight(userData.getID(), President.RightTypes.FinishCycle);
                 }
@@ -206,5 +206,12 @@ public class SpyBotPlayerGameManager implements PlayerGameManager {
             delay.play();
         }
     }
-    public void changeChancellorRight(Map.Entry<Chancellor.RightTypes, Political.Right> right) {}
+    public void changeChancellorRight(Map.Entry<Chancellor.RightTypes, Right> right) {}
+
+    public void informPresidentRightUsage(President.RightTypes right, ExecutionStatusWrapper status) {
+
+    }
+    public void informChancellorRightUsage(Chancellor.RightTypes right, ExecutionStatusWrapper status) {
+
+    }
 }

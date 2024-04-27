@@ -3,6 +3,8 @@ package model.Game;
 import model.Cards.*;
 import model.Cards.CardsArray.Card;
 import model.ChangebleRole.*;
+import model.ChangebleRole.Right.ExecutionStatus;
+import model.ChangebleRole.Right.ExecutionStatusWrapper;
 import model.Observers.ActObservers;
 import model.Voting.VoteObserver;
 import model.Voting.Voting;
@@ -61,7 +63,6 @@ public class Game implements GamePresidentAccess {
     // if spy count == -1 game chooses automaticly
     public Game(int playersCount, GameControllerModuleService moduleProxy, int cardsCount, int spyCount) {
         this.gameContrlProxy = moduleProxy;
-        System.out.println("Game init");
 
         // cards
         if (spyCount == -1)
@@ -72,7 +73,6 @@ public class Game implements GamePresidentAccess {
         }
 
         int spyCardCount = (int) (cardsCount * 11 / 17);
-
         this.cards = new CardsArray(spyCardCount, cardsCount-spyCardCount, 3, this.randomSeed);
 
         // role destribution
@@ -113,7 +113,6 @@ public class Game implements GamePresidentAccess {
         this.possibleEvents = new EnumMap<>(EventTypes.class);
         this.requiredEventsBeforeCycleEnd = EnumSet.noneOf(EventTypes.class);
 
-        System.out.println("Before possible events");
         possibleEvents.put(EventTypes.KillPlayer, true);
         possibleEvents.put(EventTypes.RevealingRoles, true);
         possibleEvents.put(EventTypes.RevealeUpperCards, true);
@@ -141,6 +140,8 @@ public class Game implements GamePresidentAccess {
             }
         }
 
+        this.president.setAllRightsIsAllowed(false, new HashSet<President.RightTypes>());
+        this.chancellor.setAllRightsIsAllowed(false, new HashSet<Chancellor.RightTypes>());
         this.gameContrlProxy.finishGame(result, shadowLeaderId, spyesId);
     }
 
@@ -181,10 +182,10 @@ public class Game implements GamePresidentAccess {
         }
 
         this.president.setAllRightsIsAllowed(false, new HashSet<>(new ArrayList<>(Arrays.asList(President.RightTypes.ChoosingChancellor))));
-        // this.president.setIsAllowedRightUsage(President.RightTypes.ChoosingChancellor, true);
+        this.president.setIsAllowedRightUsage(President.RightTypes.ChoosingChancellor, true);
         this.goToNextPresinent();
+        
         possibleEvents.put(EventTypes.PresidentSuggestChancellor, true);
-        System.out.println("The right chooseChancellor " + this.president.getCurrentRights().get(President.RightTypes.ChoosingChancellor).getIsAllowed());
     }
     
     private void choosingChancellorResult(boolean result, int candidate, Map<Integer, Boolean> votes) {
@@ -244,14 +245,10 @@ public class Game implements GamePresidentAccess {
     }
 
     private boolean isInParlament(int playerId) {
-        System.out.println(playerId);
-        if (this.president.getPlayer().getId() == playerId) return true;
-        if (this.chancellor.getPlayer() == null) {
-            if (this.lastChancellor != null && this.lastChancellor.getId() == playerId) 
-                return true;
-        } else {
-            if (this.chancellor.getPlayer().getId() == playerId) return true;
-        }
+        if (this.president.getPlayer().getId() == playerId) 
+            return true;
+        if (this.chancellor.getPlayer() != null && this.chancellor.getPlayer().getId() == playerId) 
+            return true;    
 
         return false;
     }
@@ -281,25 +278,23 @@ public class Game implements GamePresidentAccess {
         
         
         this.president.setAllRightsIsAllowed(true, new HashSet<>(new ArrayList<>(Arrays.asList(President.RightTypes.ChoosingChancellor))));
-        // this.president.setIsAllowedRightUsage(President.RightTypes.ChoosingChancellor, false);
-        System.out.println("ChooseChancellor set to false by result chose chancellor");
         return true;
     }
     
-    public boolean presidentSuggestChancellor(int playerID) {
-        System.out.println("Choosing chancellor in game");
-        if (!this.possibleEvents.get(EventTypes.PresidentSuggestChancellor))
-            return false;
-        if (!this.requiredEventsBeforeCycleEnd.isEmpty())
-            return false;
-        
-        if (isVotingActive || this.players.get(playerID) == null) return false;
-        if (wasInParlament(playerID) || this.president.getPlayer().getId() == playerID) {
-            System.out.println("Chancellor candidate was in parlament");
-            return false;
+    public void presidentSuggestChancellor(ExecutionStatusWrapper executionResult, int playerID) {
+        if (!this.possibleEvents.get(EventTypes.PresidentSuggestChancellor) || !this.requiredEventsBeforeCycleEnd.isEmpty()) {
+            executionResult.status = ExecutionStatus.IsntAllowedToUse;
+            return;
         }
-
-        System.out.println("is succesfull");
+        
+        if (isVotingActive || this.players.get(playerID) == null) {
+            executionResult.status = ExecutionStatus.UnexpectedError;
+            return;
+        }
+        if (wasInParlament(playerID) || this.president.getPlayer().getId() == playerID) {
+            executionResult.status = ExecutionStatus.PlayerWasInParlament;
+            return;
+        }
 
         ArrayList<Integer> partisipators = new ArrayList<Integer>(this.players.size());
         for (int i=0; i<this.players.size(); i++) {
@@ -314,72 +309,87 @@ public class Game implements GamePresidentAccess {
         this.gameContrlProxy.requestVoting(voting, this.president.getPlayer().getId(), playerID);
 
         possibleEvents.put(EventTypes.PresidentSuggestChancellor, false);
-        return true;
+        executionResult.status = ExecutionStatus.Executed;
     }
 
-    public boolean setNextPresidentCandidate(int playerID) {
-        if (!this.possibleEvents.get(EventTypes.SuggestNextPresident))
-            return false;
+    public void setNextPresidentCandidate(ExecutionStatusWrapper executionResult, int playerID) {
+        if (!this.possibleEvents.get(EventTypes.SuggestNextPresident)) {
+            executionResult.status = ExecutionStatus.IsntAllowedToUse;
+            return;
+        }
         
-        if (!isInParlament(playerID)) {
+        if (!isInParlament(playerID) && !wasInParlament(playerID)) {
             try {
                 if (this.players.get(playerID) == null) {
-                    System.out.println("Trying to use player that is dead");
-                    return false;
+                    executionResult.status = ExecutionStatus.NotChosenPlayer;
+                    return;
                 }
                 this.nextPresident = this.players.get(playerID);
 
                 requiredEventsBeforeCycleEnd.remove(EventTypes.SuggestNextPresident);
-                return true;
+                executionResult.status = ExecutionStatus.Executed;
+                return;
             } 
             catch (IndexOutOfBoundsException e) {
+                executionResult.status = ExecutionStatus.UnexpectedError;
                 System.err.println("Trying to set next president to uncorrect index" + e.getMessage());
             }
-        } else System.out.println("Trying to set a president that is in parlament");
-
-        return false;
+        } else 
+            executionResult.status = ExecutionStatus.PlayerWasInParlament;
     }
 
-    public Integer killPlayer(int playerID) {
-        if (!this.possibleEvents.get(EventTypes.SuggestNextPresident))
+    public Integer killPlayer(ExecutionStatusWrapper executionResult, int playerID) {
+        if (!this.possibleEvents.get(EventTypes.SuggestNextPresident)) {
+            executionResult.status = ExecutionStatus.IsntAllowedToUse;
             return null;
-        if (this.players.get(playerID) == null || playerID == this.president.getPlayer().getId()) 
+        } if (this.players.get(playerID) == null || playerID == this.president.getPlayer().getId()) {
+            executionResult.status = ExecutionStatus.NotChosenPlayer;
             return null;
+        }
 
-        if (this.players.get(playerID).getRole() == PlayerModel.mainRoles.ShadowLeader) 
+        if (this.players.get(playerID).getRole() == PlayerModel.mainRoles.ShadowLeader) {
             finishGame(true);
+            return playerID;
+        }
 
         this.killedPlayers.add(playerID);
         this.players.set(playerID, null);
         this.playerKillingObservers.informAll(playerID);
 
         requiredEventsBeforeCycleEnd.remove(EventTypes.KillPlayer);
+        executionResult.status = ExecutionStatus.Executed;
         return playerID;
     }
 
-    public PlayerModel.mainRoles revealePlayerRole(int playerID) {
-        if (!this.possibleEvents.get(EventTypes.RevealingRoles) || this.players.get(playerID) == null)
+    public PlayerModel.mainRoles revealePlayerRole(ExecutionStatusWrapper executionResult, int playerID) {
+        if (!this.possibleEvents.get(EventTypes.RevealingRoles) || this.players.get(playerID) == null) {
+            executionResult.status = ExecutionStatus.UnexpectedError;
             return PlayerModel.mainRoles.Undefined;
+        }
+        
+        executionResult.status = ExecutionStatus.Executed;
         if (this.players.get(playerID).getRole() == PlayerModel.mainRoles.ShadowLeader)
             return PlayerModel.mainRoles.Spy;
         return this.players.get(playerID).getRole();
     }
 
-    public Card[] revealeUpperCards(int count) {
-        if (!this.possibleEvents.get(EventTypes.RevealeUpperCards))
+    public Card[] revealeUpperCards(ExecutionStatusWrapper executionResult, int count) {
+        if (!this.possibleEvents.get(EventTypes.RevealeUpperCards)) {
+            executionResult.status = ExecutionStatus.IsntAllowedToUse;
             return null;
+        }
         
         requiredEventsBeforeCycleEnd.remove(EventTypes.RevealeUpperCards);
+        executionResult.status = ExecutionStatus.Executed;
         return this.cards.revealUpperCards(count);
     }
 
-    public boolean presidentFinishGameCycle() {
+    public void presidentFinishGameCycle(ExecutionStatusWrapper executionResult) {
         if (this.requiredEventsBeforeCycleEnd.isEmpty()) {
             this.resetGameCycle();
-            return true;
-        }
-
-        return false;
+            executionResult.status = ExecutionStatus.Executed;
+        } else 
+            executionResult.status = ExecutionStatus.IsntAllowedToUse;
     }
 
     //--------getters----------

@@ -2,6 +2,12 @@
     -fx-background-radius: 10;
 }
 
+.log-field {
+    -fx-text-alignment: center;
+    -fx-text-fill: #003366;
+    -fx-font-size: 18;
+}
+
 .role-revealing {
     -fx-background-color: #FAF3EB;
 }

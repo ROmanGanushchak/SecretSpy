@@ -9,6 +9,7 @@ import javafx.fxml.FXML;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.input.MouseEvent;
+import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.Pane;
 import javafx.util.Duration;
 import model.Cards.CardsArray;
@@ -30,9 +31,11 @@ public class CardRemovalController extends PopupLayerManager.PopupComponent {
     @FXML
     private ImageView cardSlote5;
 
+    @FXML
+    private AnchorPane vetoPowerSurface;
+
     private Image liberalImage;
     private Image spyImage;
-    private ActObservers<Integer> cardSlotePressed;
     private ArrayList<ImageView> slotes;
     private ArrayList<ScaleTransition> sloteAnimations;    
     private ArrayList<ImageView> activeSlotes;
@@ -40,10 +43,17 @@ public class CardRemovalController extends PopupLayerManager.PopupComponent {
     private double scaleAnimationTime = 0.1;
     private double scaleAnimationValue = 0.2;
 
+    private ActObservers<Integer> cardSlotePressed;
+    private ActObservers<Integer> vetoPowerPressed;
+    private Integer vetoIngormValue;
+
     public CardRemovalController(Pane surface) {
         super(surface);
         super.initialize(App.class.getResource("fxml/cardRemoval.fxml"), surface);
+
         this.cardSlotePressed = new ActObservers<>();
+        this.vetoPowerPressed = new ActObservers<>();
+        Component.hide(vetoPowerSurface);
     }
 
     @FXML
@@ -125,7 +135,25 @@ public class CardRemovalController extends PopupLayerManager.PopupComponent {
         this.cardSlotePressed.informAll((Integer) index / 2);
     }
 
+    @FXML
+    private void vetoPowerPressed(MouseEvent event) {
+        this.vetoPowerPressed.informAll(vetoIngormValue);
+    }
+
+    public void activateVetoUsage(Integer valueToInfrom) {
+        Component.reveal(vetoPowerSurface);
+        this.vetoIngormValue = valueToInfrom;
+    }
+
+    public void diactivateVetoUsage() {
+        Component.hide(vetoPowerSurface);
+    }
+
     public ActObserversAccess<Integer> getCardSlotePressed() {
         return this.cardSlotePressed;
+    }
+
+    public ActObserversAccess<Integer> getVetoPowerPressed() {
+        return this.vetoPowerPressed;
     }
 }
