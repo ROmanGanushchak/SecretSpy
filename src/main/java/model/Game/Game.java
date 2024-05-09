@@ -18,7 +18,9 @@ import java.util.EnumSet;
 import java.util.HashSet;
 import java.util.Map;
 
+/** The main games logic class */
 public class Game implements GamePresidentAccess {
+    /** event types */
     private enum EventTypes {
         PresidentSuggestChancellor,
         SuggestNextPresident,
@@ -29,38 +31,65 @@ public class Game implements GamePresidentAccess {
         RevealeUpperCards
     }
 
+    /** game controller proxy for requests */
     private GameControllerModuleService gameContrlProxy;
 
+    /** the seed for the random usage, if 0 then seed will be chosen randomly */
     private int randomSeed = 0;
+    /** list of players, if the player is killed then its index stores null */
     private ArrayList<PlayerModel> players;
+    /** list of killed players */
     private ArrayList<Integer> killedPlayers;
 
+    /** current president */
     private President president;
+    /** current chancellor */
     private Chancellor chancellor;
 
+    /** next president */
     private PlayerModel nextPresident;
+    /** last president, can be null */
     private PlayerModel lastPresident;
+    /** last chancellor, can be null */
     private PlayerModel lastChancellor;
     
+    /** current number of spys in the parlament */
     private int spysInParlamentCount;
+    /** current number of spys in the parlament */
     private int liberalsInParlamentCount;
 
+    /** required spy card count for spy win */
     private int requiredSpyCount = 6;
+    /** required liberal card count for liberal win */
     private int requiredLiberalCount = 5;
+    /** Required spy card count that will allow spies to win, based on the Shadowleader becoming the Chancellor */
     private int spyCountToLetChancellorFinishTheGame = 4;
+    /** The count of failed ellection, if the number reaches 4 then it gets to 0 and the card from the deck is added to the board */
     private int failedElectionsCount = 0;
 
+    /** informs the subscribers about the card adding to the board */
     private ActObservers<Card> cardAddingToBoardObservers;
+    /** informs the subscribers failed election */
     private ActObservers<Integer> failedElectionObservers; 
+    /** informs the subscribers about the player getting killed */
     private ActObservers<Integer> playerKillingObservers; 
 
+    /** the deck of the cards */
     private CardsArray cards;
     private boolean isVotingActive;
 
+    /** all posible events */
     private EnumMap<EventTypes, Boolean> possibleEvents;
+    /** the events that are required before the resetGameCycle */
     private EnumSet<EventTypes> requiredEventsBeforeCycleEnd;
     
-    // if spy count == -1 game chooses automaticly
+    /**
+     * 
+     * @param playersCount the number of players
+     * @param moduleProxy the proxy of ganecontroller to requset some actions
+     * @param cardsCount the number of cards in the deck
+     * @param spyCount the count of spy in the parlament without the shadowleader, the rest are going to be liberals
+     */
     public Game(int playersCount, GameControllerModuleService moduleProxy, int cardsCount, int spyCount) {
         this.gameContrlProxy = moduleProxy;
 
@@ -127,6 +156,10 @@ public class Game implements GamePresidentAccess {
         System.out.println("Roles distributed");
     }
 
+    /**
+     * finishes the game
+     * @param result true if the liberal won, otherwise false
+     */
     private void finishGame(boolean result) {
         int shadowLeaderId = -1;
         ArrayList<Integer> spyesId = new ArrayList<>();
@@ -145,6 +178,7 @@ public class Game implements GamePresidentAccess {
         this.gameContrlProxy.finishGame(result, shadowLeaderId, spyesId);
     }
 
+    /** Increases the liberal card count. If the maximum is exceeded, the game ends. */
     private void increaseSpyCount() {
         this.spysInParlamentCount++;
 
@@ -158,6 +192,7 @@ public class Game implements GamePresidentAccess {
             finishGame(false);
     }
 
+    /** Increases the liberal card count. If the maximum is exceeded, the game ends. */
     private void increaseLiberalCount() {
         this.liberalsInParlamentCount++;
         
@@ -165,6 +200,9 @@ public class Game implements GamePresidentAccess {
             finishGame(true);
     }
 
+    /** adds card to the board 
+     * @param card card that will be added
+    */
     private void addCardToBoard(Card card) {
         if (card != null && card.state != Card.states.Undecleared) {
             if (card.state == Card.states.Spy) this.increaseSpyCount();
@@ -174,6 +212,7 @@ public class Game implements GamePresidentAccess {
         }
     }
 
+    /** goes to nexr game cycle with choosing new president */
     private void resetGameCycle() {
         this.lastPresident = this.president.getPlayer();
         if (this.chancellor != null) {
@@ -188,6 +227,11 @@ public class Game implements GamePresidentAccess {
         possibleEvents.put(EventTypes.PresidentSuggestChancellor, true);
     }
     
+    /** method is called when the chanvellor voting is finished, based on the result go to next cycle or start the card removing
+     * @param result result of the voting
+     * @param candidate the candidate to become chancellor
+     * @param votes the map of the playerIDs and their votes
+     */
     private void choosingChancellorResult(boolean result, int candidate, Map<Integer, Boolean> votes) {
         if (result == false) {
             if (++this.failedElectionsCount == 4) {
@@ -218,6 +262,7 @@ public class Game implements GamePresidentAccess {
         }
     } 
 
+    /** changes the president towords the next one */
     private void goToNextPresinent() {
         if (this.nextPresident == null || this.players.get(this.nextPresident.getId()) == null) {
             int presidentIndex = this.president.getPlayer().getId();
@@ -236,6 +281,7 @@ public class Game implements GamePresidentAccess {
         this.nextPresident = null;
     }
 
+    /** @return true if the player was in parlament in cycle before */
     private boolean wasInParlament(int playerID) {
         if ((this.lastChancellor != null && this.lastChancellor.getId() == playerID) || 
             (this.lastPresident != null && this.lastPresident.getId() == playerID))
@@ -244,6 +290,7 @@ public class Game implements GamePresidentAccess {
         return false;
     }
 
+    /** @return true if the player is in parlament */
     private boolean isInParlament(int playerId) {
         if (this.president.getPlayer().getId() == playerId) 
             return true;
@@ -254,6 +301,9 @@ public class Game implements GamePresidentAccess {
     }
 
     // ---------events----------
+    /** method to inform the result of chancellor election 
+     * @param cards the cards that remained in the president hand
+    */
     private boolean resultPresidentChoosingCards(ArrayList<Card> cards) {
         if (!this.possibleEvents.get(EventTypes.PresidentChoosingCards))
             return false;
@@ -265,6 +315,9 @@ public class Game implements GamePresidentAccess {
         return true;
     }
     
+    /** the result of chancellor choosing card to remove
+     * @param cards the cards that remained after the card being removed
+     */
     private boolean resultChancllerChoosingCards(ArrayList<Card> cards) {
         if (!this.possibleEvents.get(EventTypes.ChancellorChoosingCards))
             return false;
@@ -281,6 +334,11 @@ public class Game implements GamePresidentAccess {
         return true;
     }
     
+    /**
+     * the method to suggest chancellor by a president
+     * @param executionResult the result of the execution
+     * @param playerID the id of the player that is suggested to be chancellor
+     */
     public void presidentSuggestChancellor(ExecutionStatusWrapper executionResult, int playerID) {
         if (!this.possibleEvents.get(EventTypes.PresidentSuggestChancellor) || !this.requiredEventsBeforeCycleEnd.isEmpty()) {
             executionResult.status = ExecutionStatus.IsntAllowedToUse;
@@ -312,6 +370,10 @@ public class Game implements GamePresidentAccess {
         executionResult.status = ExecutionStatus.Executed;
     }
 
+    /** the metod to set the next president that will be chosen after gameCycleRest
+     * @param executionResult the status of the method execution
+     * @param playerID the id of the player that will become the next president
+    */
     public void setNextPresidentCandidate(ExecutionStatusWrapper executionResult, int playerID) {
         if (!this.possibleEvents.get(EventTypes.SuggestNextPresident)) {
             executionResult.status = ExecutionStatus.IsntAllowedToUse;
@@ -338,6 +400,11 @@ public class Game implements GamePresidentAccess {
             executionResult.status = ExecutionStatus.PlayerWasInParlament;
     }
 
+    /** method to kill the player
+     * @param executionResult the status of the method execution
+     * @param playerID the id of the player that will be killed
+     * @return the id of the player that was killed
+     */
     public Integer killPlayer(ExecutionStatusWrapper executionResult, int playerID) {
         if (!this.possibleEvents.get(EventTypes.SuggestNextPresident)) {
             executionResult.status = ExecutionStatus.IsntAllowedToUse;
@@ -361,6 +428,11 @@ public class Game implements GamePresidentAccess {
         return playerID;
     }
 
+    /** reveals the role of the player
+     * @param executionResult the status of the method execution
+     * @param playerID the id of the player whitch role will be revealed
+     * @return returns the role of the player
+     */
     public PlayerModel.mainRoles revealePlayerRole(ExecutionStatusWrapper executionResult, int playerID) {
         if (!this.possibleEvents.get(EventTypes.RevealingRoles) || this.players.get(playerID) == null) {
             executionResult.status = ExecutionStatus.UnexpectedError;
@@ -373,6 +445,11 @@ public class Game implements GamePresidentAccess {
         return this.players.get(playerID).getRole();
     }
 
+    /** returns the upper cards from the deck
+     * @param executionResult the status of the method execution
+     * @param count the count of cards that will be revealed
+     * @return return the list of the upper cards
+     */
     public Card[] revealeUpperCards(ExecutionStatusWrapper executionResult, int count) {
         if (!this.possibleEvents.get(EventTypes.RevealeUpperCards)) {
             executionResult.status = ExecutionStatus.IsntAllowedToUse;
@@ -384,6 +461,9 @@ public class Game implements GamePresidentAccess {
         return this.cards.revealUpperCards(count);
     }
 
+    /** president request to finish his turn
+     * @param executionResult the status of the method execution
+     */
     public void presidentFinishGameCycle(ExecutionStatusWrapper executionResult) {
         if (this.requiredEventsBeforeCycleEnd.isEmpty()) {
             this.resetGameCycle();
@@ -393,22 +473,40 @@ public class Game implements GamePresidentAccess {
     }
 
     //--------getters----------
+    /** @param playerCount the count of players
+     * @return the supposed spy count for the playerCount */
     public int getSpyCount(int playerCount) {
         return (playerCount - 5) / 2 + 1;
     }
 
+    /** reveals the role
+     * @param playerId the id of the player whitch role will be revealed
+     * @return the role
+     */
     public PlayerModel.mainRoles getRole(int playerId) {
         return this.players.get(playerId).getRole();
     }
 
+    /**
+     * returns the president
+     * @return the president obj, with access limitation
+     */
     public PresidentAccess getPresident() {
         return this.president;
     }
 
+    /**
+     * returns the president
+     * @return the president obj, with access limitation
+     */
     public ChancellorAccess getChancellor() {
         return this.chancellor;
     }
 
+    /**
+     * 
+     * @return the ids of the players
+     */
     public int[] getPlayersIds() {
         int array[] = new int[this.players.size()];
         for (int i=0; i<this.players.size(); i++) {
@@ -418,6 +516,10 @@ public class Game implements GamePresidentAccess {
         return array;
     }
 
+    /**
+     * returns the list of the players that cant be chosen to be in the parlament
+     * @return the list of the players that cant be chosen to be in the parlament
+     */
     public ArrayList<Integer> getNonEligablePlayers() {
         ArrayList<Integer> players = new ArrayList<>();
         players.add(president.getPlayer().getId());
@@ -432,6 +534,12 @@ public class Game implements GamePresidentAccess {
         return players;
     }
 
+    /**
+     * returns the players that cant be chosen for a president right
+     * @param playerID the id of the player that asks for the method
+     * @param right the president right that is asked
+     * @return the list of players that cant be chosen
+     */
     public ArrayList<Integer> getNonChooseblePlayers(Integer playerID, President.RightTypes right) {
         ArrayList<Integer> forbidenPlayers = new ArrayList<>(killedPlayers);
 
@@ -459,6 +567,12 @@ public class Game implements GamePresidentAccess {
         return forbidenPlayers;
     }
 
+    /**
+     * returns the players that cant be chosen for a chancellor right
+     * @param playerID the id of the player that asks for the method
+     * @param right the chancellor right that is asked
+     * @return the list of players that cant be chosen
+     */
     public ArrayList<Integer> getNonChooseblePlayers(Integer playerID, Chancellor.RightTypes right) {
         switch (right) {
             default:
@@ -466,6 +580,10 @@ public class Game implements GamePresidentAccess {
         }
     }
 
+    /**
+     * returns the all spyes players
+     * @return the all spyes players
+     */
     public Map.Entry<ArrayList<Integer>, Integer> getSpyes() {
         ArrayList<Integer> spyes = new ArrayList<>();
         Integer shadowLeader = null;
@@ -479,11 +597,19 @@ public class Game implements GamePresidentAccess {
         
         return new AbstractMap.SimpleEntry<ArrayList<Integer>, Integer> (spyes, shadowLeader);
     }
-
+    
+    /**
+     * return the observers of the card adiing to the board
+     * @return the observers of the card adiing to the board
+     */
     public ActObservers<Card> getCardAddingToBoardObservers() {
         return this.cardAddingToBoardObservers;
     }
 
+    /**
+     * return the observers of the election failur
+     * @return the observers of the election failur
+     */
     public ActObservers<Integer> getFailedElectionObservers() {
         return this.failedElectionObservers;
     }

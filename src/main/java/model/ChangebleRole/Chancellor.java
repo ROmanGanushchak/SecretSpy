@@ -5,11 +5,16 @@ import java.util.EnumMap;
 import model.ChangebleRole.Right.ExecutionStatus;
 import model.ChangebleRole.Right.ExecutionStatusWrapper;
 
+/** stores all the chancellor rights, and the cards that it is holding */
 public class Chancellor extends Political<Chancellor.RightTypes> implements ChancellorAccess {
+    /** all chancellor rights types */
     public static enum RightTypes {
         VetoPower
     }
 
+    /** method to execute chancellor right VetoPower 
+     * @param executionResult the execution status, changes the .status parametr
+    */
     private void vetoPower(ExecutionStatusWrapper executionResult) {
         if (super.chooseCardToRemove(null))
             executionResult.status = ExecutionStatus.Executed;
@@ -29,6 +34,7 @@ public class Chancellor extends Political<Chancellor.RightTypes> implements Chan
     }
 }
 
+/** Chancellors Right */
 class VetoPower extends Right {
     @FunctionalInterface
     public static interface Method {

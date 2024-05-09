@@ -12,11 +12,21 @@ import javafx.scene.layout.VBox;
 import javafx.scene.transform.Scale;
 import test_ui.Components.Component.ParentUpdaters.ParentUpdater;
 
+/**
+ * Designed to simplify the work with components, stores the Parent obj, updates the basic component, provides extra functionality
+ */
 public class Component {
+    /** fxml loaded component */
     private Parent component;
+    /** obj that will update the basic obj */
     private ParentUpdater<?> parentUpdater;
+    /** for easy resizing */
     private Scale scale;
 
+    /**
+     * 
+     * @param parentUpdater the updater of the basic element, allows to update the surface with the component changes like hide 
+     */
     public Component(ParentUpdater<?> parentUpdater) {
         this.parentUpdater = parentUpdater;
     }
@@ -28,7 +38,7 @@ public class Component {
         try {
             return loader.load();
         } catch(IOException e) {
-            System.out.println("Misake while initializing component with controller setted");
+            System.out.println("Mistake while initializing component with controller setted");
             throw new RuntimeException(e);
         }
     }
@@ -56,10 +66,13 @@ public class Component {
         return component;
     }
 
+    /** setes a component, can be overrided */
     protected void setComponent(Parent component) {
         this.component = component;
     }
 
+    /**
+     * @return the fxml loaded Parent obj */
     public Parent getComponent() {
         return this.component;
     }
@@ -68,20 +81,24 @@ public class Component {
         return this.scale;
     }
 
+    /** disables and hides the obj, uses parentUpdater to synchronize the basic plane */
     public void hide() {
         parentUpdater.hide();
         Component.hide(this.component);
     }
 
+    /** activates and reveals the obj, uses parentUpdater to synchronize the basic plane */
     public void reveal() {
         parentUpdater.reveal();
         Component.reveal(this.component);
     }
 
+    /** simular to hide, but remains the visibility of the obj */
     public void turnOff() {
         Component.turnOff(this.component);
     }
 
+    /** simular to reveal, but doesnt change the visibility of the obj */
     public void turnOn() {
         Component.turnOn(this.component);
     }
@@ -104,6 +121,12 @@ public class Component {
         scale.setY(scale.getY() * scaleY);
     }
 
+    /**
+     * if obj doesnt fill in the edges then resizes it, maintains proportions
+     * @param obj the obj that will be resized
+     * @param edges edges
+     * @return scale that was applied to the obj
+     */
     public static Scale resizeToFitIn(Node obj, Node edges) {
         double adjustment = 1;
 

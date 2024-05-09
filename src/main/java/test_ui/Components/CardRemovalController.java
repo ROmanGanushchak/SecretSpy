@@ -19,6 +19,11 @@ import test_ui.App;
 import test_ui.PopupLayerManager;
 import test_ui.Components.Component.Component;
 
+/**
+ * Controller for managing card removal interactions in a game interface. This class handles 
+ * displaying cards, animating card interactions, and capturing user inputs on card selections.
+ * It extends {@link PopupLayerManager.PopupComponent} to leverage popup functionalities.
+ */
 public class CardRemovalController extends PopupLayerManager.PopupComponent {
     @FXML
     private ImageView cardSlote1;
@@ -47,6 +52,11 @@ public class CardRemovalController extends PopupLayerManager.PopupComponent {
     private ActObservers<Integer> vetoPowerPressed;
     private Integer vetoIngormValue;
 
+    /**
+     * Constructs a new CardRemovalController with a specific UI surface for displaying the card removal UI.
+     *
+     * @param surface The UI {@link Pane} component on which the card removal UI is displayed.
+     */
     public CardRemovalController(Pane surface) {
         super(surface);
         super.initialize(App.class.getResource("fxml/cardRemoval.fxml"), surface);
@@ -56,6 +66,7 @@ public class CardRemovalController extends PopupLayerManager.PopupComponent {
         Component.hide(vetoPowerSurface);
     }
 
+    /** Initializes the controller, setting up UI elements and animations */
     @FXML
     private void initialize() {
         slotes = new ArrayList<>(Arrays.asList(cardSlote1, cardSlote2, cardSlote3, cardSlote4, cardSlote5));
@@ -77,6 +88,10 @@ public class CardRemovalController extends PopupLayerManager.PopupComponent {
         }
     }
 
+    /**Sets up the controller with a list of cards. Only supports 2 or 3 cards.
+     * Hides or reveals card slots depending on the number of cards.
+     * @param cards A list of {@link CardsArray.Card} objects representing the cards to be displayed.
+     */
     public void setup(ArrayList<CardsArray.Card> cards) {
         if (cards.size() < 2 || cards.size() > 3) {
             System.out.println("uncorrectCardsCount");
@@ -101,6 +116,9 @@ public class CardRemovalController extends PopupLayerManager.PopupComponent {
         }
     }
 
+    /** The method is called when the mouse is inside the slote, increases its size if so
+     * @param index index of the slote that was trigered by mouse
+     */
     private void mouseInSlote(int index) {
         ScaleTransition animation = sloteAnimations.get(index);
 
@@ -116,6 +134,9 @@ public class CardRemovalController extends PopupLayerManager.PopupComponent {
         animation.play();
     }
 
+    /** The method is called when the mouse is out of the slote, decreases it
+     * @param index index of the slote that was trigered by mouse
+     */
     private void mouseOutSlote(int index) {
         ScaleTransition animation = sloteAnimations.get(index);
 
@@ -131,28 +152,44 @@ public class CardRemovalController extends PopupLayerManager.PopupComponent {
         animation.play();
     }
 
+    /** The method is called when the card slote was pressed, informs all listeners about the pressing
+     * @param index index of slote that was pressed
+     */
     private void slotePressed(int index) {
         this.cardSlotePressed.informAll((Integer) index / 2);
     }
 
+    /** The method is called when the veto power button was pressed, then informs the listeners about the right usage
+     * @param event default javafx parametr
+     */
     @FXML
     private void vetoPowerPressed(MouseEvent event) {
         this.vetoPowerPressed.informAll(vetoIngormValue);
     }
 
+    /** Allows the VetoPower right usage
+     * @param valueToInfrom valueToInfrom is the value that will be informed for all the listener when the right will be pressed
+     */
     public void activateVetoUsage(Integer valueToInfrom) {
         Component.reveal(vetoPowerSurface);
         this.vetoIngormValue = valueToInfrom;
     }
 
+    /** Blocks the VetoPower right usage*/
     public void diactivateVetoUsage() {
         Component.hide(vetoPowerSurface);
     }
 
+    /**
+     * @return the {@link ActObserversAccess} observer of card slote being pressed
+     */
     public ActObserversAccess<Integer> getCardSlotePressed() {
         return this.cardSlotePressed;
     }
 
+    /**
+     * @return the {@link ActObserversAccess} observer of veto power changes
+     */
     public ActObserversAccess<Integer> getVetoPowerPressed() {
         return this.vetoPowerPressed;
     }

@@ -21,6 +21,7 @@ import test_ui.ImageLoader;
 import test_ui.Components.Component.Component;
 import test_ui.Components.Component.ParentUpdaters.*;
 
+/** Class PlayerPaneController shows the information about a layer such as its icon, name, current role, and allows to choose it. It extends class {@link Component} */
 public class PlayerPaneController extends Component {
     private static EnumMap<Icons, Image> iconImages;
     public static enum Icons {
@@ -65,6 +66,9 @@ public class PlayerPaneController extends Component {
     private Integer informValue;
     private boolean playerChoseLocked;
 
+    /** Constructtor, creates instance of the class
+     * @param vbox the holder where the obj will be placed, automaticly resize itself to fit in
+     */
     public PlayerPaneController(VBox vbox) {
         super(new VBoxParentUpdater(vbox));
         super.initialize(App.class.getResource("fxml/player.fxml"), vbox);
@@ -72,6 +76,11 @@ public class PlayerPaneController extends Component {
         chooseButObservers = new ActObservers<>();
     }
 
+    /** Initializes the obj
+     * @param name              the name of the player
+     * @param iconImageName     the name of the icon
+     * @param informValue       the value that will be inform if player will be chosen
+     */
     public void initialize(String name, String iconImageName, Integer informValue) {
         this.name.setText(name); 
         this.choosePlayerBut.setImage(unlockedPlayerButChose);
@@ -86,28 +95,36 @@ public class PlayerPaneController extends Component {
         Component.hide(iconSurface);
     }
 
+    /** Blocks the possibility to choose the player by blocking the choose button, the button image will be changed */
     public void lockPlayerChose() {
         this.playerChoseLocked = true;
         this.choosePlayerBut.setImage(lockedPlayerButChose);
     }
 
+    /** Unlocks the possibility to choose the player by unlocking the choose button, the button image will be changed */
     public void unlockPlayerChose() {
         this.playerChoseLocked = false;
         this.choosePlayerBut.setImage(unlockedPlayerButChose);
     }
 
+    /** Shows the like icon */
     public void showLike() {
         this.likeImage.setImage(likeImg);
     }
 
+    /** Shows the dislike icon */
     public void showDislike() {
         this.likeImage.setImage(dislikeImg);
     }
 
+    /** Hide the like or dislike icon */
     public void hideLike() {
         this.likeImage.setImage(null);
     }
 
+    /** Shows the role or death icon
+     * @param icon icon type that will be shown
+     */
     public void showIcon(Icons icon) {
         this.roleIcon.setImage(iconImages.get(icon));
         if (icon == Icons.NONE)
@@ -116,17 +133,26 @@ public class PlayerPaneController extends Component {
             Component.reveal(iconSurface);
     }
 
+    /** Settes the value that will be informed when the choose button will be activated
+     * @param value Inform value
+     */
     public void setInformValue(Integer value) {
         this.informValue = value;
     }
 
-    public ActObserversAccess<Integer> getChooseButObservers() {
-        return this.chooseButObservers;
-    }
-
+    /** Method is called when the choose button is pressed and infroms all folovers about the pressing
+     * @param event
+     */
     @FXML
     private void choosePlayerButPressed(MouseEvent event) {
         if (!playerChoseLocked)
             this.chooseButObservers.informAll(informValue);
+    }
+
+    /**
+     * @return The {@link ActObserversAccess} of the choose player button
+     */
+    public ActObserversAccess<Integer> getChooseButObservers() {
+        return this.chooseButObservers;
     }
 }

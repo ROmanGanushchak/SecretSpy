@@ -10,13 +10,24 @@ import javafx.animation.KeyFrame;
 import javafx.animation.KeyValue;
 import javafx.animation.Timeline;
 
+/** Class to make the card apperance animation */
 public class CardAddingAnimation{
     private ActObservers<Integer> animationFinished;
 
+    /**Constructor, creates new instance*/
     public CardAddingAnimation() {
         animationFinished = new ActObservers<>();
     }
 
+    /**Method to start the animation
+     * @param duration      time that animation will last
+     * @param midPosition   the position at the mid of animation
+     * @param endPosition   the end position of the card
+     * @param midSize       the midsize of the card
+     * @param endSize       the end size of the card
+     * @param texture       the texture of the card
+     * @param obj           the image that will be animated
+     */
     public void start(double duration, Pair<Double, Double> midPosition, Pair<Double, Double> endPosition, 
     Pair<Double, Double> midSize, Pair<Double, Double> endSize, Image texture, ImageView obj) {
         Timeline animation = new Timeline();
@@ -52,6 +63,9 @@ public class CardAddingAnimation{
         animation.play();
     }
 
+    /**
+     * @return the observerAccess of the animation finish
+     */
     public ActObserversAccess<Integer> getFinishObservers() {
         return this.animationFinished;
     }

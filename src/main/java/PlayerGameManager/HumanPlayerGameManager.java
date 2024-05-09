@@ -5,7 +5,6 @@ import java.util.ArrayList;
 import java.util.EnumMap;
 import java.util.HashMap;
 import java.util.Map;
-
 import GameController.GameControllerVisualService;
 import User.UserData;
 import javafx.fxml.FXMLLoader;
@@ -22,25 +21,38 @@ import test_ui.Components.AbilityController;
 import test_ui.Components.PlayerPaneController;
 import test_ui.Components.PlayerPaneController.Icons;
 
+
+/** Extends the functionality of GameVisualizaton to fulfill all PlayerGameManager requirements */
 public class HumanPlayerGameManager extends GameVisualization implements PlayerGameManager {
+    /** game controller proxy */
     private GameControllerVisualService gameController;
+    /** userdata */
     private UserData userData;
 
+    /** current player role */
     private CurrentRoles currentRole;
+    /**  right that player requsted to use*/
     private President.RightTypes presidentRightToUse;
+    /**  right that player requsted to use*/
     private Chancellor.RightTypes chancellorRightToUse;
+    /**  possible abilities of the players*/
     private HashMap<Integer, AbilityController> abilities;
 
+    /** returns players visual data */
     public UserData.VisualData getVisualData() {
         return this.userData.visualData;
     }
 
+    /**returns the id of the player
+     * @return the id of the player
+     */
     public int getPlayerID() {
         return userData.getID();
     }
 
+    /** scene of the screen */
     private Scene scene;
-
+    /** voting that is currently going */
     private Voting currentVoting;
 
     public HumanPlayerGameManager(int id) {
@@ -50,6 +62,7 @@ public class HumanPlayerGameManager extends GameVisualization implements PlayerG
         abilities = new HashMap<>();
     }
 
+    /** method to initialize the screen */
     public void initializeScreen() {
         try {
             FXMLLoader sceneLoader = new FXMLLoader(App.class.getResource("fxml/gameVisualization.fxml"));
@@ -69,16 +82,23 @@ public class HumanPlayerGameManager extends GameVisualization implements PlayerG
         });
     }
 
+    /** method to initialize the game */
     public void initializeGame() {
         this.currentVoting = null;
 
         super.getVotingResultObservers().subscribe((Boolean result) -> this.vote(result));
     }
 
+    /**shows the death message*/
     public void kill() {
         super.showDeathMessge();
     }
 
+    /**method to add president ability to the holder
+     * @param rightType right type
+     * @param right the right
+     * @param rightsHolder vbox where right should be putted in
+     */
     private void addAbility(President.RightTypes rightType, Right right, VBox rightsHolder) {
         if (right.isActivate()) {
             System.out.println("Right " + rightType.toString() + " is active");
@@ -110,6 +130,11 @@ public class HumanPlayerGameManager extends GameVisualization implements PlayerG
         }
     }
 
+    /**method to add chancellor ability to the holder
+     * @param rightType right type
+     * @param right the right
+     * @param rightsHolder vbox where right should be putted in
+     */
     private void addAbility(Chancellor.RightTypes rightType, Right right, VBox rightsHolder) {
         if (right.isActivate()) {
             AbilityController rightController = new AbilityController(rightsHolder);
@@ -128,9 +153,10 @@ public class HumanPlayerGameManager extends GameVisualization implements PlayerG
         }
     }
 
+    /** Method to make the player the president
+     * @param rights the rights of the president
+     */
     public void makePresident(EnumMap<President.RightTypes, Right> rights) {
-        System.out.println("Human becomed president");
-
         VBox rightsHolder = super.getRightsHolder();
 
         for (Map.Entry<President.RightTypes, Right> right : rights.entrySet()) {
@@ -139,12 +165,14 @@ public class HumanPlayerGameManager extends GameVisualization implements PlayerG
         }
     }
 
+    /** Method to unmake player the president */
     public void unmakePresident() {
         VBox rightsHolder = super.getRightsHolder();
         rightsHolder.getChildren().clear();
         abilities.clear();
     }
 
+    /** Method to update a right */
     public void changePresidentRight(Map.Entry<President.RightTypes, Right> right) {
         AbilityController ability = abilities.get(right.getKey().ordinal());
         if (ability != null) {
@@ -158,6 +186,7 @@ public class HumanPlayerGameManager extends GameVisualization implements PlayerG
             addAbility(right.getKey(), right.getValue(), getRightsHolder());
     }
 
+    /** Method to change the look of the current preident */
     public void changePresident(Integer oldPresident, Integer newPresident) {
         if (oldPresident != -1)
             super.setIconPlayerPane(PlayerPaneController.Icons.NONE, oldPresident);
@@ -165,6 +194,9 @@ public class HumanPlayerGameManager extends GameVisualization implements PlayerG
             super.setIconPlayerPane(PlayerPaneController.Icons.PRESIDENT, newPresident);
     }
 
+    /** Method to make the player the chancellor
+     * @param rights the rights of the chamcellor
+     */
     public void makeChancellor(EnumMap<Chancellor.RightTypes, Right> rights) {
         VBox rightsHolder = super.getRightsHolder();
 
@@ -181,12 +213,16 @@ public class HumanPlayerGameManager extends GameVisualization implements PlayerG
         }
     }
 
+    /** Method to unmake player the chancellor */
     public void unmakeChancellor() {
         VBox rightsHolder = super.getRightsHolder();
         rightsHolder.getChildren().clear();
         abilities.clear();
     }
 
+    /** Method to update a right 
+     * {@inheritDoc}
+    */
     public void changeChancellorRight(Map.Entry<Chancellor.RightTypes, Right> right) {
         if (right.getKey() == Chancellor.RightTypes.VetoPower) {
             super.activateVetoPower(Chancellor.RightTypes.VetoPower.ordinal());
@@ -200,6 +236,7 @@ public class HumanPlayerGameManager extends GameVisualization implements PlayerG
             addAbility(right.getKey(), right.getValue(), getRightsHolder());
     }
 
+    /** Method to change the look of the current chancellor {@inheritDoc}*/
     public void changeChancellor(Integer oldChancellor, Integer newChancellor) {
         if (oldChancellor != -1)
             super.setIconPlayerPane(PlayerPaneController.Icons.NONE, oldChancellor);
@@ -207,15 +244,23 @@ public class HumanPlayerGameManager extends GameVisualization implements PlayerG
             super.setIconPlayerPane(PlayerPaneController.Icons.CHANCELLOR, newChancellor);
     }
 
+    /**shows the player role {@inheritDoc}*/
     public void killOtherPlayer(int playerID) {
         super.getPlayerIcons().get(playerID).showIcon(Icons.KILLED);
     }
 
+    /**
+     * @param cards cards that are given to be removed
+     */
     public void giveCardsToRemove(ArrayList<CardsArray.Card> cards) {
         super.getCardRemovalChooseObservers().subscribe((Integer i) -> gameController.informCardRemoved(i, userData.getID()), 1);
         super.showCardsToRemove(cards);
     }
 
+    /**
+     * method to vote in the voting
+     * @param result the vote 
+     */
     private void vote(Boolean result) {
         if (currentVoting != null) {
             this.currentVoting.vote(getPlayerID(), result);
@@ -223,6 +268,9 @@ public class HumanPlayerGameManager extends GameVisualization implements PlayerG
         }
     }
 
+    /**the request to vote for chancellor
+     * @param voting the voting obj
+     */
     public void voteForChancellor(Voting voting, int presidentID, int chancellorID) {
         if (this.currentVoting != null) 
             System.out.println("Trying to add voting while other didnt ended");
@@ -230,15 +278,24 @@ public class HumanPlayerGameManager extends GameVisualization implements PlayerG
         super.startVoting(presidentID, chancellorID);
     }
 
+    /**the request to vote for chancellor
+     * @param voting the voting obj
+     */
     public void voteForChancellor(Voting voting) {
         this.voteForChancellor(voting, -1, -1);
     }
 
+    /**sets ProxyGameController 
+     * @param gameController the proxy of the game controller
+     */
     public void setProxyGameController(GameControllerVisualService gameController) {
         this.gameController = gameController;
         super.setGameContrlProxy(gameController);
     }
 
+    /**returns the games scene
+     * @return the scene
+     */
     public Scene getScene() {
         return this.scene;
     }

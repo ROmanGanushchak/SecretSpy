@@ -11,6 +11,7 @@ import test_ui.Components.VoteComponentController;
 import test_ui.Components.VoteResultController;
 import test_ui.Components.Component.Component;
 
+/** manages the vote surface, and shows the appearence animations */
 public class VoteManeger extends PopupLayerManager.PopupComponent {
     private AnchorPane voteSurface;
     private double voteSurfaceAnimationTime = 1.5;
@@ -22,6 +23,10 @@ public class VoteManeger extends PopupLayerManager.PopupComponent {
     
     private PopupLayerManager popupLayerManager;
 
+    /**Constructor to create new instance of the class
+     * @param voteSurface       the surface where the votting will appear, if no viting is active the surface is hided
+    //  * @param popupLayerManager the manager of the popup layer
+     */
     public VoteManeger(AnchorPane voteSurface, PopupLayerManager popupLayerManager) {
         super(voteSurface);
         super.setComponent(voteSurface);
@@ -44,12 +49,22 @@ public class VoteManeger extends PopupLayerManager.PopupComponent {
         Component.hide(voteResult);
     }
 
+    /**Method to show the result of the voting
+     * @param voteResult    the result of the voting
+     * @param presidentName the name of the current president
+     * @param yesVoteNames  all participators votes that were for the candidate
+     * @param noVoteNames   all participators votes that were against the candidate
+     */
     public void showResult(boolean voteResult, String presidentName, ArrayList<String> yesVoteNames, ArrayList<String> noVoteNames) {
         Component.hide(this.voteComponent);
         Component.reveal(this.voteResult);
         this.voteResultController.setup(voteResult, presidentName, yesVoteNames, noVoteNames);
     }
 
+    /**Method to start the voting, in this stage ask player to vote
+     * @param presidentName     name of the current president
+     * @param chancellorName    name of the candidate
+     */
     public void start(String presidentName, String chancellorName) {
         this.voteController.setPresidentName(presidentName);
         this.voteController.setChancellorName(chancellorName);
@@ -57,6 +72,7 @@ public class VoteManeger extends PopupLayerManager.PopupComponent {
         popupLayerManager.askActivation(this);    
     }
 
+    /**Overridef method that activates popup component and shows the appearance anuimation*/
     @Override
     public void activate() {
         TranslateTransition animation = new TranslateTransition(Duration.seconds(this.voteSurfaceAnimationTime), this.voteSurface);
@@ -73,6 +89,7 @@ public class VoteManeger extends PopupLayerManager.PopupComponent {
         super.activate();
     }
 
+    /** Method to show the finish animation */
     public void end() {
         TranslateTransition animation = new TranslateTransition(Duration.seconds(this.voteSurfaceAnimationTime), this.voteSurface);
         animation.setFromY(0);
@@ -89,18 +106,30 @@ public class VoteManeger extends PopupLayerManager.PopupComponent {
         animation.play();
     }
 
-    public ActObserversAccess<Boolean> getVotingResultObservers() {
-        return this.voteController.getVoteResultObservers();
-    }
-
+    /**sets the current president name
+     * @param name president name
+     */
     public void setPresidentName(String name) {
         this.voteController.setPresidentName(name);
     }
     
+    /**sets the candidate chancellor name
+     * @param name chancellor candidate name
+     */
     public void setChancellorName(String name) {
         this.voteController.setChancellorName(name);
     }
 
+    /** returns the voting result observer
+     * @return the observer access
+     */
+    public ActObserversAccess<Boolean> getVotingResultObservers() {
+        return this.voteController.getVoteResultObservers();
+    }
+
+    /**returns the observer of the voting end
+     * @return the observer of the voting end
+     */
     public ActObserversAccess<Integer> getEndObservers() {
         return this.voteResultController.getContinueButtonObservers();
     }

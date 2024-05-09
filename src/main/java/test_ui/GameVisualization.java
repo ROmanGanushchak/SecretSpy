@@ -40,8 +40,8 @@ import javafx.scene.transform.Scale;
 import javafx.util.Duration;
 import javafx.util.Pair;
 
-public class GameVisualization { // game visualization має компоненти спільні для всіх гравців
-
+/** Class is related to visualizing the player in gane screen */
+public class GameVisualization {
     @FXML
     private AnchorPane basePane;
 
@@ -103,12 +103,17 @@ public class GameVisualization { // game visualization має компонент
 
     private CardRemovalController cardRemovalController;
 
+    /** Executes the command from the terminal field on the screen */
     @FXML
     void executComand(ActionEvent event) {
         this.gameControllerProxy.executeCommand(this.comandLine.getText());
         this.comandLine.setText("");
     }
 
+    /**Resizes the screen horizontally
+     * @param oldNumber old screen x size
+     * @param newNumber new screen x size
+     */
     public void resizeMainMuneX(Number oldNumber, Number newNumber) {
         if (oldNumber.doubleValue() == 0)
             lastTransformation.setX(1);
@@ -116,6 +121,10 @@ public class GameVisualization { // game visualization має компонент
             lastTransformation.setX((newNumber.doubleValue() / oldNumber.doubleValue()) * lastTransformation.getX());
     }
 
+    /**Resizes the screen vertically
+     * @param oldNumber old screen y size
+     * @param newNumber new screen y size
+     */
     public void resizeMainMuneY(Number oldNumber, Number newNumber) {
         if (oldNumber.doubleValue() == 0)
             lastTransformation.setX(1);
@@ -123,10 +132,7 @@ public class GameVisualization { // game visualization має компонент
             lastTransformation.setY((newNumber.doubleValue() / oldNumber.doubleValue()) * lastTransformation.getY());
     }
 
-    public Pair<Number, Number> getMainSurfaceSize() {
-        return new Pair<Number, Number>(this.mainPlane.getWidth(), this.mainPlane.getHeight());
-    }
-
+    /** Initializes the object, all observers and fields */
     @FXML
     private void initialize() {
         try {
@@ -160,20 +166,29 @@ public class GameVisualization { // game visualization має компонент
         }
     }
 
+    /**Returns the icon of the players role
+     * @param role the role of the player
+     * @return the image of the role
+     */
     private Image getRoleImage(PlayerModel.mainRoles role) {
         Image cardImage;
+        ImageLoader imageLoader = ImageLoader.getInstance();
         if (role == PlayerModel.mainRoles.Liberal)
-            cardImage = new Image(App.class.getResourceAsStream("images/liberalRoleCard.png"));
+            cardImage = imageLoader.getImage("liberalRoleCard.png");
         else if (role == PlayerModel.mainRoles.Spy)
-            cardImage = new Image(App.class.getResourceAsStream("images/spyRoleCard.png"));
+            cardImage = imageLoader.getImage("spyRoleCard.png");
         else if (role == PlayerModel.mainRoles.ShadowLeader)
-            cardImage = new Image(App.class.getResourceAsStream("images/shadowLeader.png"));
+            cardImage = imageLoader.getImage("shadowLeader.png");
         else
-            cardImage = new Image(App.class.getResourceAsStream("images/continue-circle.png"));
-        
+            cardImage = imageLoader.getImage("continue-circle.png");
         return cardImage;
     }
 
+    /**Shows the players role
+     * @param role          players role
+     * @param spyes         the list of ids of spyes, can be empty
+     * @param shadowLeader  the id of shadowLeader
+     */
     public void showRole(PlayerModel.mainRoles role, ArrayList<Integer> spyes, Integer shadowLeader) {
         Image cardImage = getRoleImage(role);
 
@@ -184,6 +199,9 @@ public class GameVisualization { // game visualization має компонент
         popupLayerManager.askActivation(revealRole);
     }
 
+    /**Shows the players role
+     * @param role  players role
+     */
     public void showRole(PlayerModel.mainRoles role) {
         Image cardImage = getRoleImage(role);
 
@@ -194,6 +212,9 @@ public class GameVisualization { // game visualization має компонент
         popupLayerManager.askActivation(revealRole);
     }
 
+    /**Initializes all players visual data
+     * @param playersVisualData visual data
+     */
     public void setPlayersVisuals(Map<Integer, UserData.VisualData> playersVisualData) {
         this.playersVisualData = playersVisualData;
 
@@ -207,6 +228,9 @@ public class GameVisualization { // game visualization має компонент
         }
     }
 
+    /**Shows cards that will be removed, if othe popup component is active will be shown with delay
+     * @param cards cards to choose from
+     */
     public void showCardsToRemove(ArrayList<CardsArray.Card> cards) {
         PauseTransition pause = new PauseTransition(Duration.seconds(0.5));
         final ActObservers.MethodToCall<Integer> method = (Integer index) -> {
@@ -230,22 +254,28 @@ public class GameVisualization { // game visualization має компонент
         popupLayerManager.askActivation(cardRemovalController);
     }
 
+    /**Method to activate the chancellors veto power
+     * @param informValue the value that will be informed with veto power activation
+     */
     public void activateVetoPower(Integer informValue) {
         cardRemovalController.activateVetoUsage(informValue);
     }
 
+    /**Method to diactivate the chancellors veto power*/
     public void diactivateVetoPower() {
         cardRemovalController.diactivateVetoUsage();
     }
 
-    public ActObserversAccess<Integer> getVetoPowerPressed() {
-        return this.cardRemovalController.getVetoPowerPressed();
-    }
-
+    /**Method sets the gameControllerVisualServise, should be called after initialization
+     * @param gameContrlProxy game controller visual proxy
+     */
     public void setGameContrlProxy(GameControllerVisualService gameContrlProxy) {
         this.gameControllerProxy = gameContrlProxy;
     }
 
+    /**Method that shows upper cards from the deck
+     * @param cards cards to be shown
+     */
     public void revealCards(Card[] cards) {
         revealingCards.initialize(new ArrayList<>(Arrays.asList(cards)));
 
@@ -253,22 +283,32 @@ public class GameVisualization { // game visualization має компонент
         this.popupLayerManager.askActivation(revealingCards);
     }
 
+    /**Method to start voting
+     * @param presidentID   id of the current president
+     * @param chancellorID  id of the chancellor candidate
+     */
     public void startVoting(int presidentID, int chancellorID) {
         String presidentName = playersVisualData.get(presidentID).getName();
         String chancellorName = playersVisualData.get(chancellorID).getName();
         if (presidentName == null)
             presidentName = "President";
         if (chancellorName == null)
-            presidentName = "President";
+            chancellorName = "Chancellor";
 
         this.voteManeger.start(playersVisualData.get(presidentID).getName(),
                 playersVisualData.get(chancellorID).getName());
     }
 
+    /** Method to end the voting */
     public void endVoting() {
         this.voteManeger.end();
     }
 
+    /**Method to show the voting result, if other popup component is activated then will be shown woth delay
+     * @param result        the voting result
+     * @param candidateID   the id of the candidate
+     * @param votes         all partisipators votes
+     */
     public void showVotingResult(boolean result, int candidateID, Map<Integer, Boolean> votes) {
         ArrayList<String> yesVoteNames = new ArrayList<>(), noVoteNames = new ArrayList<>();
 
@@ -287,20 +327,33 @@ public class GameVisualization { // game visualization має компонент
         this.voteManeger.showResult(result, playersVisualData.get(candidateID).getName(), yesVoteNames, noVoteNames);
     }
 
+    /**Sets the icon to the players icom
+     * @param icon      type of icon to be setted
+     * @param playerID  the id of the player whitch icon will be changed
+     */
     public void setIconPlayerPane(PlayerPaneController.Icons icon, int playerID) {
         this.playersIcons.get(playerID).showIcon(icon);
     }
 
+    /** Method allows to choose all players from the players field */
     public void unlockAllPlayersChose() {
         for (PlayerPaneController player : playersIcons.values())
             player.unlockPlayerChose();
     }
 
+    /** Method locks all players from the players field
+     * @param players players whitch choose button will be blocked
+     */
     public void lockPlayersChose(ArrayList<Integer> players) {
         for (Integer player : players)
             playersIcons.get(player).lockPlayerChose();
     }
 
+    /** Method shows the finish pane
+     * @param result            the game result
+     * @param shadowLeaderId    the id of the shadowLeader
+     * @param spyesID           list of ids of the spyes
+     */
     public void finishGame(boolean result, int shadowLeaderId, ArrayList<Integer> spyesID) {
         this.popupLayerManager.subscribeForCallWhenFree((Boolean p) -> {
             Component.hide(onBoardPane);
@@ -314,6 +367,7 @@ public class GameVisualization { // game visualization має компонент
         }, 1);
     }
 
+    /** Shows the death message for this player, afterwords the player can only watch the game */
     public void showDeathMessge() {
         ShowDeath showDeath = new ShowDeath(cardRemovingPane);
         showDeath.getExitButObservers().subscribe(
@@ -326,6 +380,9 @@ public class GameVisualization { // game visualization має компонент
         popupLayerManager.askActivation(showDeath);
     }
 
+    /** Method to force player to choose the player
+     * @param forbidenPlayers players that are not allowed to choose
+     */
     public void forceToChoosePlayer(ArrayList<Integer> forbidenPlayers) {
         for (Integer player : forbidenPlayers) {
             PlayerPaneController pane = playersIcons.get(player);
@@ -337,6 +394,9 @@ public class GameVisualization { // game visualization має компонент
         Component.turnOff(presidentRightsPane);
     }
 
+    /** Method to finish player choose
+     * @param forbidenPlayers players that were not allowed to choose
+     */
     public void finishPlayerChoose(ArrayList<Integer> forbidenPlayers) {
         for (Integer player : forbidenPlayers) {
             PlayerPaneController pane = playersIcons.get(player);
@@ -348,14 +408,25 @@ public class GameVisualization { // game visualization має компонент
         Component.turnOn(presidentRightsPane);
     }
 
+    /** Method to show the log of president right usage
+     * @param right     right type that was used
+     * @param status    right execution status
+     */
     public void informPresidentRightUsage(President.RightTypes right, ExecutionStatusWrapper status) {
         logeField.setText("The president right " + right.toString() + " " + Right.execaptionStatusText.get(status.status));
     }
 
+    /** Method to show the log of chancellor right usage
+     * @param right     right type that was used
+     * @param status    right execution status
+     */
     public void informChancellorRightUsage(Chancellor.RightTypes right, ExecutionStatusWrapper status) {
         logeField.setText("The chancellor right " + right.toString() + " " + Right.execaptionStatusText.get(status.status));
     }
 
+    /** Method adds card to the board and shpows the adding animation after the end of all popups components
+     * @param type card type being added
+     */
     public void addCardToBoard(Card.states type) {
         this.popupLayerManager.subscribeForCallWhenFree((Boolean f) -> {
             ImageView card = new ImageView();
@@ -406,60 +477,73 @@ public class GameVisualization { // game visualization має компонент
         }, 1);
     }
 
+    /** Method shows the count of failed ellections
+     * @param failedCount the number of failed votings
+     */
     public void changeFailedVotingCount(int failedCount) {
         this.liberalBoardController.moveVotingCircle(failedCount);
     }
 
+    /** Method returns the vote manager
+     * @return the vote manager
+     */
     public VoteManeger getVoteManager() {
         return this.voteManeger;
     }
 
+    /** Method returns the right holder
+     * @return vbox whitch contains all abilities
+     */
     public VBox getRightsHolder() {
         return this.rightsHolder;
     }
 
+    /** Method returns the holder of players icons
+     * @return the holder of players icons
+     */
     public VBox getPlayersIconsHolder() {
         return this.playerIconHodler;
     }
 
+    /**
+     * @return observer access of player being chosen
+     */
     public ActObserversAccess<Integer> getPlayerChosenObservers() {
         return this.playerChosenObservers;
     }
 
+    /**
+     * @return observer access of card removal
+     */
     public ActObserversAccess<Integer> getCardRemovalChooseObservers() {
         return this.cardRemovalChooseObservers;
     }
 
+    /**
+     * @return the map of players icons
+     */
     public Map<Integer, PlayerPaneController> getPlayerIcons() {
         return this.playersIcons;
     }
 
+    /**
+     * @return observer of veto power usage
+     */
+    public ActObserversAccess<Integer> getVetoPowerPressed() {
+        return this.cardRemovalController.getVetoPowerPressed();
+    }
+
+    /**
+     * @return observers access of voting result
+     */
     public ActObserversAccess<Boolean> getVotingResultObservers() {
         return this.voteManeger.getVotingResultObservers();
     }
-}
 
-/*
- * Label fpsLabel = new Label("FPS: ");
- * new AnimationTimer() {
- * private long lastUpdate = 0;
- * private long frameCount = 0;
- * private double fps = 0;
- * 
- * @Override
- * public void handle(long now) {
- * if (lastUpdate > 0) {
- * double elapsedTime = (now - lastUpdate) / 1_000_000_000.0;
- * double currentFPS = 1/elapsedTime;
- * fps += (currentFPS - fps) / ++frameCount; // Simple moving average
- * fpsLabel.setText(String.format("FPS: %.2f", fps));
- * }
- * if (frameCount % 500 == 0) { // Reset every 60 frames
- * frameCount = 0;
- * fps = 0;
- * }
- * lastUpdate = now;
- * }
- * }.start();
- * this.mainPlane.getChildren().add(fpsLabel);
- */
+    /**
+     * @return the size of the game scene
+     */
+    public Pair<Number, Number> getMainSurfaceSize() {
+        return new Pair<Number, Number>(this.mainPlane.getWidth(), this.mainPlane.getHeight());
+    }
+}

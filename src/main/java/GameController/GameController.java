@@ -18,22 +18,32 @@ import model.Game.Game;
 import model.Game.PlayerModel;
 import model.Voting.VoteObserver;
 import model.Voting.Voting;
-import test_ui.GameVisualization;
 import test_ui.Components.PlayerPaneController.Icons;
 
+/** Class GameController is designed to provide comunication betwean model and visualization, stores all players and bots and informs 
+ * all of them about the model changes.
+ */
 public class GameController implements GameControllerModuleService, GameControllerVisualService {
+    /** array of all players */
     private ArrayList<PlayerGameManager> players;
+    /** array of all human players */
     private ArrayList<HumanPlayerGameManager> humanPlayers;
+    /** the game logic obj */
     private Game gameModel;
-    private GameVisualization gameVisualization;
+    /** controllers visual proxy */
     private GameControllerVisualService visualProxy;
+    /** controllers model proxy */
     private GameControllerModuleService moduleProxy;
-    private Voting currentVoting;
+    /** current president id */
     private Integer currentPresident = -1;
+    /** current chancellor id */
     private Integer currentChancellor = -1;
-
+    /** scanner obj */
     private Scanner scanner = new Scanner(System.in);
 
+    /** sets new presedint
+     * @param player player id
+     */
     private void makePresident(Integer player) {
         if (currentPresident != -1)
             players.get(currentPresident).unmakePresident();
@@ -46,6 +56,9 @@ public class GameController implements GameControllerModuleService, GameControll
         currentPresident = player; 
     }
 
+    /** sets new chancellor
+     * @param player player id
+     */
     private void makeChancellor(Integer player) {
         if (currentChancellor != -1)
             players.get(currentChancellor).unmakeChancellor();
@@ -59,6 +72,10 @@ public class GameController implements GameControllerModuleService, GameControll
         currentChancellor = player;
     }
 
+    /** constractor
+     * @param humanPlayers list of all human players
+     * @param botsCount the count of bots
+     */
     public GameController(ArrayList<HumanPlayerGameManager> humanPlayers, int botsCount) {
         this.moduleProxy = (GameControllerModuleService) Proxy.newProxyInstance(
             GameControllerModuleService.class.getClassLoader(), 
@@ -153,6 +170,11 @@ public class GameController implements GameControllerModuleService, GameControll
         makePresident(this.gameModel.getPresident().getPlayer().getId());
     }
 
+    /** method to requst voting 
+     * @param voting voting obj
+     * @param presidentId id of president that requested voting
+     * @param chancellorId id of the candidate
+    */
     public void requestVoting(Voting voting, int presidentId, int chancellorId) {
         voting.getEndingObservers().subscribe(
             new VoteObserver( (boolean result, int candidateId, Map<Integer, Boolean> votes) ->
@@ -165,12 +187,20 @@ public class GameController implements GameControllerModuleService, GameControll
         }
     }
 
+    /** shows the voting result
+     * @param result result of the voting
+     * @param candidateId the candidate of the ellection
+     * @param votes the votes of the participants
+     */
     private void showVotingResults(boolean result, int candidateId, Map<Integer, Boolean> votes) {
         for (HumanPlayerGameManager player : this.humanPlayers) {
             player.showVotingResult(result, candidateId, votes);
         }
     }
 
+    /**executes a command, debug only, scans the parametrs from the console
+     * @param command the command name
+     */
     public void executeCommand(String command) {
         int num;
         ExecutionStatusWrapper executionStatus = new ExecutionStatusWrapper();
@@ -248,11 +278,20 @@ public class GameController implements GameControllerModuleService, GameControll
         }
     }
     
+    /** finishes the game 
+     * @param result the game result
+     * @param shadowLeaderId id of the shadow leader
+     * @param spyesId list of the spyes ids
+    */
     public void finishGame(boolean result, int shadowLeaderId, ArrayList<Integer> spyesId) {
         for (HumanPlayerGameManager player : humanPlayers) 
             player.finishGame(result, shadowLeaderId, spyesId);
     }
 
+    /** allows player to infrom card that was removed
+     * @param card index of the card that was asked to remove
+     * @param playerID the id of the player that called the method
+     */
     public void informCardRemoved(Integer card, Integer playerID) {
         if (playerID == currentPresident) {
             this.gameModel.getPresident().chooseCardToRemove(card);
@@ -261,6 +300,11 @@ public class GameController implements GameControllerModuleService, GameControll
         }
     }
 
+    /** executes the presedint right
+     * @param playerID id of the player that asked for the right execution
+     * @param right right type
+     * @param parametrs parametrs of the right
+     */
     public void executePresidentRight(Integer playerID, President.RightTypes right, Object... parametrs) {
         if (playerID != gameModel.getPresident().getPlayer().getId())
             return;
@@ -312,6 +356,11 @@ public class GameController implements GameControllerModuleService, GameControll
             player.informPresidentRightUsage(right, executionStatus);
     }
 
+    /** executes the chancellor right
+     * @param playerID id of the player that asked for the right execution
+     * @param right right type
+     * @param parametrs parametrs of the right
+     */
     public void executeChancellorRight(Integer playerID, Chancellor.RightTypes right, Object... parametrs) {
         ExecutionStatusWrapper executionStatus = new ExecutionStatusWrapper();
         if (playerID == gameModel.getChancellor().getPlayer().getId()) {
@@ -323,14 +372,21 @@ public class GameController implements GameControllerModuleService, GameControll
                 for (PlayerGameManager player : players) 
                     player.informChancellorRightUsage(right, executionStatus);
             }
-        }
-        
+        } 
     }
 
+    /** returns non chooseble players for the president right 
+     * @param playerID id of the player that called method
+     * @param right right type
+    */
     public ArrayList<Integer> getNonChooseblePlayers(Integer playerID, President.RightTypes right) {
         return gameModel.getNonChooseblePlayers(playerID, right);
     }
 
+    /** returns non chooseble players for the chamncellor right 
+     * @param playerID id of the player that called method
+     * @param right right type
+    */
     public ArrayList<Integer> getNonChooseblePlayers(Integer playerID, Chancellor.RightTypes right) {
         return gameModel.getNonChooseblePlayers(playerID, right);
     }

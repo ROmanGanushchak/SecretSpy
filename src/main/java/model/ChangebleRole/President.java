@@ -2,10 +2,10 @@ package model.ChangebleRole;
 
 import java.util.EnumMap;
 import model.Game.GamePresidentAccess;
-import model.Game.PlayerModel;
-import model.ChangebleRole.Right;
 
+/** stores all the president rights, and the cards that it is holding */
 public class President extends Political<President.RightTypes> implements PresidentAccess {
+    /** all right types */
     public static enum RightTypes {
         ChoosingChancellor,         
         RevealingRoles,             
@@ -22,7 +22,9 @@ public class President extends Political<President.RightTypes> implements Presid
         }
     }
 
+    /** the game obj to execute some rights */
     private GamePresidentAccess game;
+    /** all rights of the president */
     private EnumMap<RightTypes, Right> rights;
 
     public President(GamePresidentAccess game) {
@@ -41,7 +43,9 @@ public class President extends Political<President.RightTypes> implements Presid
     }
 }
 
+/** the right ChoosingChancellorRight */
 class ChoosingChancellorRight extends Right {
+    /** the game proxy */
     private GamePresidentAccess game;
     public ChoosingChancellorRight(GamePresidentAccess game) { 
         super(Request.ChoosePlayer); 
@@ -58,7 +62,9 @@ class ChoosingChancellorRight extends Right {
     }
 }
 
+/** the right ChoosingChancellorRight */
 class RevealingRoles extends Right {
+    /** the game proxy */
     private GamePresidentAccess game;
 
     public RevealingRoles(GamePresidentAccess game) { 
@@ -76,7 +82,9 @@ class RevealingRoles extends Right {
     }
 }
 
+/** the right ChoosingChancellorRight */
 class CheckingUpperThreeCards extends Right {
+    /** the game proxy */
     private GamePresidentAccess game;
     public CheckingUpperThreeCards(GamePresidentAccess game) { 
         super(Request.None); 
@@ -93,7 +101,9 @@ class CheckingUpperThreeCards extends Right {
     }
 }
 
+/** the right ChoosingChancellorRight */
 class ChoosingNextPresident extends Right {
+    /** the game proxy */
     private GamePresidentAccess game;
     public ChoosingNextPresident(GamePresidentAccess game) { 
         super(Request.ChoosePlayer); 
@@ -110,7 +120,9 @@ class ChoosingNextPresident extends Right {
     }
 }
 
+/** the right ChoosingChancellorRight */
 class KillingPlayers extends Right {
+    /** the game proxy */
     private GamePresidentAccess game;
     public KillingPlayers(GamePresidentAccess game) { 
         super(Request.ChoosePlayer); 
@@ -119,7 +131,7 @@ class KillingPlayers extends Right {
 
     @Override
     public Object execute(ExecutionStatusWrapper executionResult, Object... params) {
-        if (params.length == 1) 
+        if (params.length == 1 && params[0].getClass() == Integer.class) 
             return game.killPlayer(executionResult, (Integer) params[0]);
         
         executionResult.status = ExecutionStatus.NotChosenPlayer;
@@ -127,7 +139,9 @@ class KillingPlayers extends Right {
     }
 }
 
+/** the right ChoosingChancellorRight */
 class FinishCycle extends Right {
+    /** the game proxy */
     private GamePresidentAccess game;
     public FinishCycle(GamePresidentAccess game) { 
         super(Request.None); 

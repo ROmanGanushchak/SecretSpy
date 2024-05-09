@@ -27,7 +27,6 @@
                   </ImageView>
                   <Label alignment="CENTER" layoutX="24.0" layoutY="14.0" prefHeight="64.0" prefWidth="186.0" styleClass="main-lable" text="Rights" />
                   <VBox fx:id="rightsHolder" layoutX="19.0" layoutY="118.0" prefHeight="511.0" prefWidth="206.0" />
-                  <Label fx:id="chosenRight" alignment="CENTER" layoutX="15.0" layoutY="67.0" prefHeight="43.0" prefWidth="214.0" styleClass="chosen-right" />
                </children>
             </AnchorPane>
             <AnchorPane layoutY="-2.0" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="653.0" prefWidth="237.0" styleClass="playres-icon-surface">
@@ -58,7 +57,7 @@
                   </ImageView>
                </children>
             </AnchorPane>
-            <Label fx:id="logeField" alignment="CENTER" layoutX="347.0" layoutY="566.0" prefHeight="48.0" prefWidth="517.0" styleClass="log-field" />
+            <Label fx:id="logeField" alignment="CENTER" layoutX="300.0" layoutY="566.0" prefHeight="48.0" prefWidth="609.0" styleClass="log-field" />
          </children>
       </AnchorPane>
       <AnchorPane fx:id="popupPlane" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="653.0" prefWidth="1211.0">

@@ -20,9 +20,21 @@ import test_ui.App;
 import test_ui.Components.Component.Component;
 import test_ui.Components.Component.ParentUpdaters.VBoxParentUpdater;
 
+/**
+ * AbilityController handles the user interface logic for abilities, managing animations and interactions within a UI component.
+ * This class extends {@link Component}, and it assumes the component is related to abilities, possibly in a game or similar application.
+ * This class manages various animations related to the display of abilities and handles user interactions like mouse hover and click.
+ */
 public class AbilityController extends Component {
+    
+    /**
+     * Functional interface for handling animation stop notifications.
+     */
     @FunctionalInterface
     public interface AnimationFinishedNoification {
+        /**
+         * Called when an animation has stopped.
+         */
         void animationStoped();
     }
 
@@ -58,12 +70,22 @@ public class AbilityController extends Component {
     private AnimationFinishedNoification currentCircleAnimationStop;
     private AnimationFinishedNoification currentTextAnimationStop = () -> {};
 
+    /**
+     * Constructs an AbilityController with a specified VBox to manage.
+     * Initializes the controller, loads the necessary FXML, and sets up observers.
+     *
+     * @param vbox The VBox to be managed by this controller.
+     */
     public AbilityController(VBox vbox) {
         super(new VBoxParentUpdater(vbox));
         super.initialize(App.class.getResource("fxml/ability.fxml"), vbox);
         useButtonObservers = new ActObservers<>();
     }
 
+    /**
+     * Initializes the controller components and sets up animations and their handlers.
+     * This method is called automatically after the FXML fields are injected.
+     */
     @FXML
     private void initialize() {
         currentCircleAnimation = new TranslateTransition();
@@ -87,16 +109,35 @@ public class AbilityController extends Component {
         });
     }
 
+    /**
+     * Configures the ability controller with the specified ability name, usage count, and value.
+     *
+     * @param name The name of the ability.
+     * @param countOfUsage The number of times the ability can be used.
+     * @param value The value associated with the ability.
+     */
     public void setup(String name, int countOfUsage, Integer value) {
         this.countLabel.setText(Integer.toString(countOfUsage));
         this.titleLabel.setText(name);
         this.value = value;
     }
 
+    /**
+     * Updates the usage count displayed on the UI.
+     *
+     * @param value The new usage count.
+     */
     public void setUsageCount(int value) {
         this.countLabel.setText(Integer.toString(value));
     }
 
+    /**
+     * Configures and starts the animation for moving a specified Node to the location of another Node.
+     *
+     * @param obj The node to animate.
+     * @param target The target node the animated node moves towards.
+     * @param animation The TranslateTransition to use for the animation.
+     */
     private void setMoveAnimation(Node obj, Node target, TranslateTransition animation) {
         if (animation.getStatus() != Status.STOPPED) {
             Duration duration = animation.getCurrentTime();
@@ -108,6 +149,14 @@ public class AbilityController extends Component {
         animation.setByX(target.getLayoutX() - (obj.getLayoutX() + obj.getTranslateX()));
     }
 
+    /**
+     * Creates and returns an AnimationTimer that gradually changes the opacity of a given Node to a specified final opacity over a given time.
+     *
+     * @param obj The node whose opacity will be changed.
+     * @param time The duration over which to change the opacity.
+     * @param finaleOpacity The final opacity value.
+     * @return An instance of AnimationTimer that performs the opacity change.
+     */
     private static AnimationTimer getSlowOpacityChanger(Node obj, double time, double finaleOpacity) {
         return new AnimationTimer() {
             long lastNow=-1;
@@ -124,6 +173,11 @@ public class AbilityController extends Component {
         };
     }
 
+    /**
+     * Handles the mouse on component event by starting animations and opacity changes.
+     *
+     * @param event The MouseEvent triggered when the mouse enters the component.
+     */
     @FXML
     void mouseOnComponent(MouseEvent event) {
         Component.turnOn(usePane);
@@ -145,6 +199,11 @@ public class AbilityController extends Component {
         opacityChanger.start();
     }
 
+    /**
+     * Handles the mouse out component event by reversing animations and reducing opacity to zero.
+     *
+     * @param event The MouseEvent triggered when the mouse exits the component.
+     */
     @FXML
     void mouseOutCopmonent(MouseEvent event) {
         Component.turnOff(usePane);
@@ -166,11 +225,21 @@ public class AbilityController extends Component {
         opacityChanger.start();
     }
 
+    /**
+     * Handles the mouse click event on the use button, informing all observers about the current value.
+     *
+     * @param event The MouseEvent triggered by clicking the use button.
+     */
     @FXML
     void usePressed(MouseEvent event) {
         useButtonObservers.informAll(value);
     }
 
+    /**
+     * Returns the observers of the use button actions.
+     *
+     * @return An accessor for the observers watching the use button.
+     */
     public ActObserversAccess<Integer> getUseButtonObservers() {
         return this.useButtonObservers;
     }

@@ -14,6 +14,7 @@ import test_ui.App;
 import test_ui.ImageLoader;
 import test_ui.PopupLayerManager;
 
+/** Class RevealingCards extends PopupComponent and designed to show 3 cards */
 public class RevealingCards extends PopupLayerManager.PopupComponent {
     @FXML
     private ImageView cardSlote1;
@@ -25,6 +26,9 @@ public class RevealingCards extends PopupLayerManager.PopupComponent {
     private ArrayList<ImageView> cardSlotes;
     private ActObservers<Integer> exitButtonPresed;
 
+    /** Constructor, create the instance of the class
+     * @param surface the basic surface where component is placed
+     */
     public RevealingCards(Pane surface) {
         super(surface);
         super.initialize(App.class.getResource("fxml/revealingCards.fxml"), surface);
@@ -33,6 +37,9 @@ public class RevealingCards extends PopupLayerManager.PopupComponent {
         exitButtonPresed = new ActObservers<>();
     }
 
+    /** initializes the obj with the array of cards, can be used only for 3 cards.
+     * @param cards the array of cards
+     */
     public void initialize(ArrayList<Card> cards) {
         if (cards.size() != 3) 
             return;
@@ -45,10 +52,16 @@ public class RevealingCards extends PopupLayerManager.PopupComponent {
         }
     }
 
+    /** The methods returns the observe access of the exit button
+     * @return the observe access of the exit button
+     */
     public ActObserversAccess<Integer> getExitButtonObservers() {
         return this.exitButtonPresed;
     }
 
+    /**The method is called when the exit button is pressed and informs all observers about the exit request
+     * @param event
+     */
     @FXML
     private void exitPressed(MouseEvent event) {
         this.exitButtonPresed.informAll(null);

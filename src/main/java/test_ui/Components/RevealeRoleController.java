@@ -16,6 +16,8 @@ import model.Observers.ActObserversAccess;
 import test_ui.App;
 import test_ui.PopupLayerManager;
 
+/** Class RevealeRoleController designed to show the player role, can show the names of ShadowLeader and Spyes as well. 
+  * Extends the class*/
 public class RevealeRoleController extends PopupLayerManager.PopupComponent {
     @FXML
     private AnchorPane hidePane;
@@ -42,12 +44,18 @@ public class RevealeRoleController extends PopupLayerManager.PopupComponent {
 
     private ActObservers<Integer> exitButtonObservers;
 
+    /** Creates an instance of obj and initialize it
+     * @param surface The basic surface on whitch the component will be displayed
+     */
     public RevealeRoleController(Pane surface) {
         super(surface);
         super.initialize(App.class.getResource("fxml/revealRole.fxml"), surface);
         exitButtonObservers = new ActObservers<>();
     }
 
+    /**
+     * @param event default javafx 
+     */
     @FXML
     private void mouseMove(MouseEvent event) {
         this.hidePane.setLayoutY(Math.min(Math.max(event.getSceneY() / super.getScale().getY() + initialOffSetY, minLayoutY), startingPosition));
