@@ -3,7 +3,7 @@ package User;
 /** stores the userdata of the player */
 public class UserData {
     /** stores the visual data of the player, for outpside code only read methods */
-    public static class VisualData {
+    public class VisualData {
         /** name of the user */
         private String name;
         /** url of the icon if the player */
