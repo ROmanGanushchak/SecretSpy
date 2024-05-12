@@ -1,4 +1,4 @@
-module test_ui {
+module test_ui1 {
     requires javafx.controls;
     requires javafx.fxml;
     requires java.desktop;

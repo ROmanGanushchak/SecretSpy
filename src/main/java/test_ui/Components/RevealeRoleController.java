@@ -18,7 +18,13 @@ import test_ui.PopupLayerManager;
 
 /** Class RevealeRoleController designed to show the player role, can show the names of ShadowLeader and Spyes as well. 
   * Extends the class*/
-public class RevealeRoleController extends PopupLayerManager.PopupComponent {
+
+  interface RevealeRoleControllerAccess {
+    public void setup(Image roleImage);
+    public void setup(Image roleImage, ArrayList<Integer> players, Integer uniqePlayer, Map<Integer, UserData.VisualData> visualData);
+}
+
+public class RevealeRoleController extends PopupLayerManager.PopupComponent implements RevealeRoleControllerAccess {
     @FXML
     private AnchorPane hidePane;
     @FXML

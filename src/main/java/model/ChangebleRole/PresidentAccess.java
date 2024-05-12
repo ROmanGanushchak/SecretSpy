@@ -12,7 +12,11 @@ import model.Observers.ActObserversAccess;
 
 public interface PresidentAccess {
     public boolean isRightActivated(RightTypes right);
-    public PlayerModel getPlayer();
+
+    default public PlayerModel getPlayer() {
+        return null;
+    }
+    
     public EnumMap<President.RightTypes, Right> getCurrentRights();
 
     public ActObserversAccess<ArrayList<Card>> getCardChoosedObserver();

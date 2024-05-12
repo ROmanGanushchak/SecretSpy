@@ -3,6 +3,7 @@ package PlayerGameManager;
 import java.util.ArrayList;
 import java.util.EnumMap;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.Random;
 import GameController.GameControllerVisualService;
@@ -124,7 +125,30 @@ public class LiberalBotPlayerGameManager implements PlayerGameManager {
      * @param rights The rights available to the president.
      */
     public void makePresident(EnumMap<President.RightTypes, Right> rights) {
-        // Implementation for making a president
+        role = CurrentRoles.President;
+
+        // choosing chancellor
+        double minSpyChance = Double.MAX_VALUE;
+        int minSpyChanceIndex = -1;
+        HashSet<Integer> forbiden = new HashSet<Integer>(this.gameController.getNonChooseblePlayers(userData.getID(), President.RightTypes.ChoosingChancellor));
+
+        for (Map.Entry<Integer, Double> spyChance : spyChances.entrySet()) {
+            if (!forbiden.contains(spyChance.getKey()) && spyChance.getValue() < minSpyChance) {
+                minSpyChance = spyChance.getValue();
+                minSpyChanceIndex = spyChance.getKey();
+            }
+        }
+
+        final int resultIndex = minSpyChanceIndex;
+        Timeline delay = new Timeline(new KeyFrame(
+            Duration.seconds(1),
+            ae -> {
+                gameController.executePresidentRight(userData.getID(), President.RightTypes.ChoosingChancellor, Math.max(resultIndex, 0));
+                gameController.executePresidentRight(userData.getID(), President.RightTypes.FinishCycle);
+            }
+        ));
+        delay.play();
+        this.presidentRights = rights;
     }
 
     /**
