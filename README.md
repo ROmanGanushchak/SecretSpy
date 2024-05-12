@@ -34,3 +34,15 @@ The static polymorphism can be found in test_ui/Components/Component/Component.j
 PopupComponent, where the setComponent method was overloaded to ensure that at the start of the program all popup components are hidden and deactivated.
 
 The agragation can be found in most of the classes, some of them are Game, GameController, GameVisualization, President, Politicall and so on.
+
+Criterias:
+- 1 patterns
+-      -Command pattern in class political to allow sending used rights and their properties
+-      -Observer pattern - locates in model/Observers has class ActObservers that is generic and provides ability to subscribe for some action        is used in model/ChangebleRole/Right to track the useCount changes, and in other class
+-      -Strategy pattern is used in test_ui/Components/Component/Component, the constractor takes instance of class ParentUpdater that is             designed to update the surface of component based on the component changesm. The class ParentUpdater can be chosen based on the base of        component, other then that used in model/cards/cardsShuffle to provide different types of shuffeling 
+- 3 ui based on javafx
+- 5 generics - used in model/Chancellor/Political, model/Observers/ActionObserver
+- 6 RTTI - used in model/ChangebleRole/President/KillingPlayers/execute to ensure correct input typing
+- 7 nested classes - used in User/UserData to separate VisualData to then be able to use it in View part of application and diny the changes     from outside code
+- 8 lambda - used in observers to subscribe for excion for example in model/Game to subscrbe for president player changes in constractor
+- 
