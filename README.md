@@ -1,1 +1,1 @@
-The documantation is located in project_info, the class diagram and javadoc can be found there as well. The javadoc files are in placed in javadoc/javadoc, for each file separetly in the same folder structure as project has
+The documantation is located in project_info, the class diagram, javadoc and compiled .jar file can be found there as well. The javadoc files are in placed in javadoc/javadoc, for each file separetly in the same folder structure as project has

@@ -17,6 +17,13 @@
             </goals>
           </execution>
         </executions>
+        <configuration>
+          <sourcepath>src/main/java</sourcepath>
+          <includes>
+            <include>**/*.java</include>
+          </includes>
+          <excludePackageNames>path.to.excluded.packages.*</excludePackageNames>
+        </configuration>
       </plugin>
       <plugin>
         <artifactId>maven-compiler-plugin</artifactId>
